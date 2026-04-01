@@ -115,8 +115,10 @@
     <Reference Include="Unity.Mathematics">
       <HintPath>$(GameDirPath)Beat Saber_Data\Managed\Unity.Mathematics.dll</HintPath>
     </Reference>
-    <Reference Include="Unity.XR.OpenVR">
-      <HintPath>$(GameDirPath)Libs\OpenVR\Unity.XR.OpenVR.dll</HintPath>
+    <Reference Include="Unity.XR.OpenVR, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <Private>False</Private>
+      <HintPath>E:\BSManager\BSInstances\1.40.4_mod\Libs\Unity.XR.OpenVR.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="UnityEngine.AssetBundleModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

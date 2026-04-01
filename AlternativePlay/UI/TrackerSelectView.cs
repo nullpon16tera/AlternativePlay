@@ -1,4 +1,4 @@
-﻿using AlternativePlay.Models;
+using AlternativePlay.Models;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.ViewControllers;
@@ -166,13 +166,13 @@ namespace AlternativePlay.UI
 
     public class TrackerSelectItem
     {
-        [UIValue(nameof(this.Icon))]
+        [UIValue(nameof(Icon))]
         public string Icon { get; set; }
 
-        [UIValue(nameof(this.Serial))]
+        [UIValue(nameof(Serial))]
         public string Serial { get; set; }
 
-        [UIValue(nameof(this.FullName))]
+        [UIValue(nameof(FullName))]
         public string FullName { get; set; }
     }
 }

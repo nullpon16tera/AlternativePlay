@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -84,9 +84,10 @@ namespace AlternativePlay.Models
         /// </remarks>
         public void PollTrackedDevices()
         {
-            // Get all tracked device poses from OpenVR API
+            // Get all tracked device poses from OpenVR API (predict forward toward photon time to reduce motion-to-photon latency)
             var pTrackedDevicePoseArray = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
-            this.openVRManager.System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, 0.0f, pTrackedDevicePoseArray);
+            float predictedSecondsToPhotons = this.GetPredictedSecondsToPhotonsFromNow();
+            this.openVRManager.System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, predictedSecondsToPhotons, pTrackedDevicePoseArray);
 
             int i = 0;
             this.TrackedDevices.ForEach(device =>
@@ -100,6 +101,39 @@ namespace AlternativePlay.Models
                 }
                 i++;
             });
+        }
+
+        /// <summary>
+        /// Estimates seconds from now until display photons for OpenVR pose prediction.
+        /// Falls back to 0 when timing cannot be read (same as the previous fixed 0f argument).
+        /// </summary>
+        private float GetPredictedSecondsToPhotonsFromNow()
+        {
+            var system = this.openVRManager?.System;
+            if (system == null) return 0f;
+
+            float secondsSinceLastVsync = 0f;
+            ulong frameCounter = 0;
+            if (!system.GetTimeSinceLastVsync(ref secondsSinceLastVsync, ref frameCounter))
+                return 0f;
+
+            var error = ETrackedPropertyError.TrackedProp_Success;
+            float displayFrequency = system.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty.Prop_DisplayFrequency_Float, ref error);
+            if (error != ETrackedPropertyError.TrackedProp_Success || displayFrequency <= 1f)
+                displayFrequency = 90f;
+
+            error = ETrackedPropertyError.TrackedProp_Success;
+            float secondsFromVsyncToPhotons = system.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty.Prop_SecondsFromVsyncToPhotons_Float, ref error);
+            if (error != ETrackedPropertyError.TrackedProp_Success)
+                secondsFromVsyncToPhotons = 0f;
+
+            float frameDuration = 1f / displayFrequency;
+            float predicted = frameDuration - secondsSinceLastVsync + secondsFromVsyncToPhotons;
+
+            if (predicted < 0f) predicted = 0f;
+            if (predicted > 0.05f) predicted = 0.05f;
+
+            return predicted;
         }
 
         /// <summary>

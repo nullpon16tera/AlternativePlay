@@ -1,4 +1,4 @@
-﻿using AlternativePlay.Models;
+using AlternativePlay.Models;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.ViewControllers;
@@ -63,7 +63,7 @@ namespace AlternativePlay.UI
         [UIComponent(nameof(SelectModeList))]
         public readonly CustomCellListTableData SelectModeList;
 
-        [UIAction(nameof(this.OnModeClicked))]
+        [UIAction(nameof(OnModeClicked))]
         public void OnModeClicked(TableView _, PlayModeSelectOption selected)
         {
             var playModeSettings = this.configuration.GetPlayModeSetting(selected.Index);
@@ -76,7 +76,7 @@ namespace AlternativePlay.UI
             this.mainFlowCoordinator.ShowPlayModeSelect(playModeSettings, selected.Index);
         }
 
-        [UIAction(nameof(this.OnAddNewConfiguration))]
+        [UIAction(nameof(OnAddNewConfiguration))]
         public void OnAddNewConfiguration()
         {
             // Add a new setting to the bottom of the list
