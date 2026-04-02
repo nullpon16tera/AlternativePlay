@@ -44,6 +44,12 @@ namespace AlternativePlay.Models
         /// </summary>
         public void LoadTrackedDeviceProperties()
         {
+            if (this.openVRManager?.System == null)
+            {
+                this.TrackedDevices = new List<OpenVRDeviceInfo>();
+                return;
+            }
+
             // Get a list of all valid tracked devices up to OpenVR's maximum
             this.TrackedDevices = Enumerable.Range(0, (int)OpenVR.k_unMaxTrackedDeviceCount).Select(i =>
                 new OpenVRDeviceInfo
@@ -84,6 +90,9 @@ namespace AlternativePlay.Models
         /// </remarks>
         public void PollTrackedDevices()
         {
+            if (this.openVRManager?.System == null)
+                return;
+
             // Get all tracked device poses from OpenVR API (predict forward toward photon time to reduce motion-to-photon latency)
             var pTrackedDevicePoseArray = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
             float predictedSecondsToPhotons = this.GetPredictedSecondsToPhotonsFromNow();
@@ -161,6 +170,9 @@ namespace AlternativePlay.Models
 
         public Pose? GetPoseFromLeftController()
         {
+            if (this.openVRManager?.System == null)
+                return null;
+
             uint index = this.openVRManager.System.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.LeftHand);
             var device = this.TrackedDevices.ElementAtOrDefault((int)index);
 
@@ -171,6 +183,9 @@ namespace AlternativePlay.Models
 
         public Pose? GetPoseFromRightController()
         {
+            if (this.openVRManager?.System == null)
+                return null;
+
             uint index = this.openVRManager.System.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.RightHand);
             var device = this.TrackedDevices.ElementAtOrDefault((int)index);
 
