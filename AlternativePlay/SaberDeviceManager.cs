@@ -42,6 +42,15 @@ namespace AlternativePlay
         }
 
         /// <summary>
+        /// Re-polls OpenVR poses. Two-controller Darth Maul calls this from <see cref="UnityEngine.MonoBehaviour.LateUpdate"/>
+        /// so both-hand saber transforms use the freshest controller data in the frame.
+        /// </summary>
+        public void PollTrackedDevices()
+        {
+            this.trackedDeviceManager.PollTrackedDevices();
+        }
+
+        /// <summary>
         /// Gets the pose for the given tracker config data or else it falls back to the
         /// left controller pose. This method accounts for Room Adjust and Noodle Extensions
         /// changing viewpoint functionality.

@@ -46,7 +46,24 @@ namespace AlternativePlay
                 }
             }
 
-            this.TransformSabers();
+            bool twoControllers = this.configuration.Current.ControllerCount == ControllerCountEnum.Two;
+            if (!twoControllers || this.Split)
+                this.TransformSabers();
+        }
+
+        private void LateUpdate()
+        {
+            if (this.configuration.Current.PlayMode != PlayMode.DarthMaul)
+                return;
+
+            if (this.Split)
+                return;
+
+            if (this.configuration.Current.ControllerCount != ControllerCountEnum.Two)
+                return;
+
+            this.saberDeviceManager.PollTrackedDevices();
+            this.TransformTwoControllerMaul();
         }
 
         /// <summary>
