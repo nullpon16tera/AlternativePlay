@@ -88,14 +88,17 @@ namespace AlternativePlay.Models
         /// <remarks>
         /// Ensure that <see cref="LoadTrackedDeviceProperties"/> has been called recently to ensure the list is up to date!
         /// </remarks>
-        public void PollTrackedDevices()
+        /// <param name="extraPredictedSecondsToPhotons">Added to the usual photon prediction (e.g. two-controller Darth Maul).</param>
+        public void PollTrackedDevices(float extraPredictedSecondsToPhotons = 0f)
         {
             if (this.openVRManager?.System == null)
                 return;
 
             // Get all tracked device poses from OpenVR API (predict forward toward photon time to reduce motion-to-photon latency)
             var pTrackedDevicePoseArray = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
-            float predictedSecondsToPhotons = this.GetPredictedSecondsToPhotonsFromNow();
+            float predictedSecondsToPhotons = this.GetPredictedSecondsToPhotonsFromNow() + extraPredictedSecondsToPhotons;
+            if (predictedSecondsToPhotons < 0f) predictedSecondsToPhotons = 0f;
+            if (predictedSecondsToPhotons > 0.05f) predictedSecondsToPhotons = 0.05f;
             this.openVRManager.System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, predictedSecondsToPhotons, pTrackedDevicePoseArray);
 
             int i = 0;

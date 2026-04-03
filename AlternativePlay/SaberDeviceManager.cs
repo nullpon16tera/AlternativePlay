@@ -1,4 +1,4 @@
-﻿using AlternativePlay.HarmonyPatches;
+using AlternativePlay.HarmonyPatches;
 using AlternativePlay.Models;
 using System;
 using UnityEngine;
@@ -16,7 +16,12 @@ namespace AlternativePlay
 #pragma warning disable CS0649
         [Inject]
         private TrackedDeviceManager trackedDeviceManager;
+        [Inject]
+        private Configuration configuration;
 #pragma warning restore CS0649
+
+        /// <summary>Extra OpenVR pose prediction (seconds) when Darth Maul uses two controllers; tune if two-hand still feels late.</summary>
+        private const float DarthMaulTwoControllerExtraPredictedSeconds = 0.006f;
 
         private SaberManager saberManager;
         private GameObject playerOrigin;
@@ -37,7 +42,12 @@ namespace AlternativePlay
 
         private void Update()
         {
-            this.trackedDeviceManager.PollTrackedDevices();
+            float extraPrediction = 0f;
+            var cur = this.configuration.Current;
+            if (cur.PlayMode == PlayMode.DarthMaul && cur.ControllerCount == ControllerCountEnum.Two)
+                extraPrediction = DarthMaulTwoControllerExtraPredictedSeconds;
+
+            this.trackedDeviceManager.PollTrackedDevices(extraPrediction);
             if (!this.calibrated) this.CalibrateSaberPositions();
         }
 
