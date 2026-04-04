@@ -55,6 +55,9 @@ namespace AlternativePlay
                 return;
             if (this.Split)
                 return;
+            // Only two-controller maul repolls in LateUpdate; one-controller is handled entirely in Update.
+            if (this.configuration.Current.ControllerCount != ControllerCountEnum.Two)
+                return;
 
             this.saberDeviceManager.PollTrackedDevices();
             this.TransformTwoControllerMaul();
