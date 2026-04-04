@@ -1,4 +1,4 @@
-﻿using AlternativePlay.HarmonyPatches;
+using AlternativePlay.HarmonyPatches;
 using AlternativePlay.Models;
 using System;
 using UnityEngine;
@@ -26,6 +26,18 @@ namespace AlternativePlay
         private Pose savedRightController;
         private Pose savedRightSaber;
         private bool calibrated;
+
+        /// <summary>
+        /// Controller-local position (meters) so saber aligns with vanilla when in-game saber position X/Y are 0.
+        /// Matches ≈ −5 cm on X and Y in Beat Saber settings (see CalibrateSaberPositions / Get* controller path).
+        /// </summary>
+        private static readonly Vector3 ControllerLocalSaberPositionCorrectionMeters = new Vector3(-0.05f, -0.05f, 0f);
+
+        /// <summary>
+        /// Quest 3 (Oculus Touch) via OpenVR: tracked pose is ring-centric; blade origin sits above the grip when X points up.
+        /// Extra local rotation (degrees) aligns saber with hand (tune if needed).
+        /// </summary>
+        private static readonly Vector3 Quest3ControllerGripEulerDegrees = new Vector3(-28f, 0f, 0f);
 
         private void Start()
         {
@@ -63,6 +75,8 @@ namespace AlternativePlay
                 // Return adjusted position from the saber
                 Pose controllerPose = this.trackedDeviceManager.GetPoseFromLeftController() ?? new Pose();
                 Pose adjustedControllerPose = this.AdjustForPlayerOrigin(controllerPose);
+                adjustedControllerPose = ApplyControllerLocalSaberPositionCorrection(adjustedControllerPose);
+                adjustedControllerPose = ApplyQuest3ControllerGripRotation(adjustedControllerPose);
                 return TrackedDeviceManager.GetTrackedObjectPose(this.savedLeftSaber, this.savedLeftController, adjustedControllerPose);
             }
         }
@@ -89,6 +103,8 @@ namespace AlternativePlay
                 // Return adjusted position from the saber
                 Pose controllerPose = this.trackedDeviceManager.GetPoseFromRightController() ?? new Pose();
                 Pose adjustedControllerPose = this.AdjustForPlayerOrigin(controllerPose);
+                adjustedControllerPose = ApplyControllerLocalSaberPositionCorrection(adjustedControllerPose);
+                adjustedControllerPose = ApplyQuest3ControllerGripRotation(adjustedControllerPose);
                 return TrackedDeviceManager.GetTrackedObjectPose(this.savedRightSaber, this.savedRightController, adjustedControllerPose);
             }
         }
@@ -168,12 +184,16 @@ namespace AlternativePlay
         {
             this.calibrated = true;
 
-            // Save current controller position
+            // Save current controller position (same correction as GetLeft/RightSaberPose controller path)
             this.savedLeftController = this.trackedDeviceManager.GetPoseFromLeftController() ?? new Pose();
             this.savedLeftController = this.AdjustForPlayerOrigin(this.savedLeftController);
+            this.savedLeftController = ApplyControllerLocalSaberPositionCorrection(this.savedLeftController);
+            this.savedLeftController = ApplyQuest3ControllerGripRotation(this.savedLeftController);
 
             this.savedRightController = this.trackedDeviceManager.GetPoseFromRightController() ?? new Pose();
             this.savedRightController = this.AdjustForPlayerOrigin(this.savedRightController);
+            this.savedRightController = ApplyControllerLocalSaberPositionCorrection(this.savedRightController);
+            this.savedRightController = ApplyQuest3ControllerGripRotation(this.savedRightController);
 
             // Save current game saber positions
             this.savedLeftSaber.position = this.saberManager.leftSaber.transform.position;
@@ -203,6 +223,18 @@ namespace AlternativePlay
             }
 
             return newDevicePose;
+        }
+
+        private static Pose ApplyControllerLocalSaberPositionCorrection(Pose pose)
+        {
+            pose.position += pose.rotation * ControllerLocalSaberPositionCorrectionMeters;
+            return pose;
+        }
+
+        private static Pose ApplyQuest3ControllerGripRotation(Pose pose)
+        {
+            pose.rotation *= Quaternion.Euler(Quest3ControllerGripEulerDegrees);
+            return pose;
         }
     }
 }

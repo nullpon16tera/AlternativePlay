@@ -98,18 +98,16 @@ namespace AlternativePlay.Models
             float predictedSecondsToPhotons = this.GetPredictedSecondsToPhotonsFromNow();
             this.openVRManager.System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, predictedSecondsToPhotons, pTrackedDevicePoseArray);
 
-            int i = 0;
-            this.TrackedDevices.ForEach(device =>
+            foreach (var device in this.TrackedDevices)
             {
-                TrackedDevicePose_t? polledDevice = pTrackedDevicePoseArray.ElementAtOrDefault(i);
-                if (polledDevice != null)
-                {
-                    Vector3 position = polledDevice.Value.mDeviceToAbsoluteTracking.GetPosition();
-                    Quaternion rotation = polledDevice.Value.mDeviceToAbsoluteTracking.GetRotation();
-                    device.Pose = new Pose(position, rotation);
-                }
-                i++;
-            });
+                if (device.Index < 0 || device.Index >= pTrackedDevicePoseArray.Length)
+                    continue;
+
+                var polledDevice = pTrackedDevicePoseArray[device.Index];
+                Vector3 position = polledDevice.mDeviceToAbsoluteTracking.GetPosition();
+                Quaternion rotation = polledDevice.mDeviceToAbsoluteTracking.GetRotation();
+                device.Pose = new Pose(position, rotation);
+            }
         }
 
         /// <summary>
@@ -174,9 +172,12 @@ namespace AlternativePlay.Models
                 return null;
 
             uint index = this.openVRManager.System.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.LeftHand);
-            var device = this.TrackedDevices.ElementAtOrDefault((int)index);
+            if (index == OpenVR.k_unTrackedDeviceIndexInvalid)
+                return null;
 
-            if (device == null) { return null; }
+            var device = this.TrackedDevices.FirstOrDefault(d => d.Index == (int)index);
+            if (device == null)
+                return null;
 
             return device.Pose;
         }
@@ -187,9 +188,12 @@ namespace AlternativePlay.Models
                 return null;
 
             uint index = this.openVRManager.System.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.RightHand);
-            var device = this.TrackedDevices.ElementAtOrDefault((int)index);
+            if (index == OpenVR.k_unTrackedDeviceIndexInvalid)
+                return null;
 
-            if (device == null) { return null; }
+            var device = this.TrackedDevices.FirstOrDefault(d => d.Index == (int)index);
+            if (device == null)
+                return null;
 
             return device.Pose;
         }
