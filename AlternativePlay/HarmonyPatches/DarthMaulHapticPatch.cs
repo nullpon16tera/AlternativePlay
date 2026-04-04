@@ -38,19 +38,8 @@ namespace AlternativePlay.HarmonyPatches
                 return;
             }
 
-            if (Configuration.Current.ControllerCount == ControllerCountEnum.Two && Configuration.Current.ReverseMaulDirection)
-            {
-                // If reversing direction with two controller then always swap hands
-                if (node == XRNode.LeftHand)
-                {
-                    node = XRNode.RightHand;
-                }
-
-                if (node == XRNode.RightHand)
-                {
-                    node = XRNode.LeftHand;
-                }
-            }
+            // Two-controller Darth Maul: do not remap haptics. ReverseMaulDirection only changes saber poses in
+            // DarthMaulBehavior; hits still correspond to left/right saber → left/right controller as in vanilla.
         }
     }
 }
