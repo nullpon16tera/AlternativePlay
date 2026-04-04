@@ -1,4 +1,4 @@
-using AlternativePlay.HarmonyPatches;
+﻿using AlternativePlay.HarmonyPatches;
 using AlternativePlay.Models;
 using System;
 using UnityEngine;
@@ -38,6 +38,15 @@ namespace AlternativePlay
         /// Extra local rotation (degrees) aligns saber with hand (tune if needed).
         /// </summary>
         private static readonly Vector3 Quest3ControllerGripEulerDegrees = new Vector3(-28f, 0f, 0f);
+
+         /// <summary>
+        /// Re-polls OpenVR poses. Two-controller Darth Maul calls this from <see cref="UnityEngine.MonoBehaviour.LateUpdate"/>
+        /// so both-hand saber transforms use the freshest controller data in the frame.
+        /// </summary>
+        public void PollTrackedDevices()
+        {
+            this.trackedDeviceManager.PollTrackedDevices();
+        }
 
         private void Start()
         {

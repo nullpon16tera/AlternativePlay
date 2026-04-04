@@ -31,6 +31,20 @@ namespace AlternativePlay.Models
     /// </summary>
     public class TrackedDeviceManager
     {
+        /// <summary>
+        /// OpenVR pose prediction tuning (seconds). Adjust these when experimenting with motion-to-photon latency.
+        /// </summary>
+        public static float FallbackDisplayFrequencyHz = 90f;
+
+        public static float MinPredictionSeconds = 0f;
+
+        public static float MaxPredictionSeconds = 0.05f;
+
+        /// <summary>
+        /// Added to the computed prediction before clamping to min/max (can be negative).
+        /// </summary>
+        public static float PredictionBiasSeconds = 1.5f;
+
 #pragma warning disable CS0649
         [Inject]
         private OpenVRManager openVRManager;
@@ -113,6 +127,7 @@ namespace AlternativePlay.Models
         /// <summary>
         /// Estimates seconds from now until display photons for OpenVR pose prediction.
         /// Falls back to 0 when timing cannot be read (same as the previous fixed 0f argument).
+        /// Tuning: <see cref="FallbackDisplayFrequencyHz"/>, <see cref="MinPredictionSeconds"/>, <see cref="MaxPredictionSeconds"/>, <see cref="PredictionBiasSeconds"/>.
         /// </summary>
         private float GetPredictedSecondsToPhotonsFromNow()
         {
@@ -127,7 +142,7 @@ namespace AlternativePlay.Models
             var error = ETrackedPropertyError.TrackedProp_Success;
             float displayFrequency = system.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty.Prop_DisplayFrequency_Float, ref error);
             if (error != ETrackedPropertyError.TrackedProp_Success || displayFrequency <= 1f)
-                displayFrequency = 90f;
+                displayFrequency = FallbackDisplayFrequencyHz;
 
             error = ETrackedPropertyError.TrackedProp_Success;
             float secondsFromVsyncToPhotons = system.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty.Prop_SecondsFromVsyncToPhotons_Float, ref error);
@@ -136,9 +151,10 @@ namespace AlternativePlay.Models
 
             float frameDuration = 1f / displayFrequency;
             float predicted = frameDuration - secondsSinceLastVsync + secondsFromVsyncToPhotons;
+            predicted += PredictionBiasSeconds;
 
-            if (predicted < 0f) predicted = 0f;
-            if (predicted > 0.05f) predicted = 0.05f;
+            if (predicted < MinPredictionSeconds) predicted = MinPredictionSeconds;
+            if (predicted > MaxPredictionSeconds) predicted = MaxPredictionSeconds;
 
             return predicted;
         }

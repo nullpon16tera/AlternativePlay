@@ -49,6 +49,17 @@ namespace AlternativePlay
             this.TransformSabers();
         }
 
+        private void LateUpdate()
+        {
+            if (this.configuration.Current.PlayMode != PlayMode.DarthMaul)
+                return;
+            if (this.Split)
+                return;
+
+            this.saberDeviceManager.PollTrackedDevices();
+            this.TransformTwoControllerMaul();
+        }
+
         /// <summary>
         /// Move the sabers that have been disconnected from the VRControllers ourselves
         /// </summary>
