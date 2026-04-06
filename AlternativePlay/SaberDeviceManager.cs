@@ -28,6 +28,14 @@ namespace AlternativePlay
         private bool calibrated;
 
         /// <summary>
+        /// After Game scene load, wait this many <see cref="UnityEngine.MonoBehaviour.LateUpdate"/> frames before
+        /// snapping controller/saber poses so vanilla and tracking have settled (reduces rare bad calibration).
+        /// </summary>
+        private const int LateUpdateCalibrationDelayFrames = 3;
+
+        private int framesRemainingUntilCalibration;
+
+        /// <summary>
         /// Controller-local position (meters) so saber aligns with vanilla when in-game saber position X/Y are 0.
         /// Matches ≈ −5 cm on X and Y in Beat Saber settings (see CalibrateSaberPositions / Get* controller path).
         /// </summary>
@@ -51,6 +59,7 @@ namespace AlternativePlay
         private void Start()
         {
             this.calibrated = false;
+            this.framesRemainingUntilCalibration = LateUpdateCalibrationDelayFrames;
             this.trackedDeviceManager.LoadTrackedDeviceProperties();
             this.saberManager = MultiplayerLocalActivePlayerGameplayManagerPatch.multiplayerSaberManager ?? FindObjectOfType<SaberManager>();
             this.playerOrigin = GameObject.Find("LocalPlayerGameCore/Origin");
@@ -59,7 +68,27 @@ namespace AlternativePlay
         private void Update()
         {
             this.trackedDeviceManager.PollTrackedDevices();
-            if (!this.calibrated) this.CalibrateSaberPositions();
+        }
+
+        private void LateUpdate()
+        {
+            if (this.calibrated)
+                return;
+
+            if (this.framesRemainingUntilCalibration > 0)
+            {
+                this.framesRemainingUntilCalibration--;
+                if (this.framesRemainingUntilCalibration > 0)
+                    return;
+            }
+
+            if (this.saberManager == null)
+            {
+                this.framesRemainingUntilCalibration = 1;
+                return;
+            }
+
+            this.CalibrateSaberPositions();
         }
 
         /// <summary>
