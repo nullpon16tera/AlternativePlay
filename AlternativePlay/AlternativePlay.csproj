@@ -291,6 +291,9 @@
   <ItemGroup>
     <EmbeddedResource Include="UI\BeatFlailView.bsml" />
   </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy "$(TargetFileName)" "$(GameDirPath)\Plugins"</PostBuildEvent>
