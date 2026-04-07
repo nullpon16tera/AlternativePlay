@@ -31,20 +31,6 @@ namespace AlternativePlay.Models
     /// </summary>
     public class TrackedDeviceManager
     {
-        /// <summary>
-        /// OpenVR pose prediction tuning (seconds). Adjust these when experimenting with motion-to-photon latency.
-        /// </summary>
-        public static float FallbackDisplayFrequencyHz = 90f;
-
-        public static float MinPredictionSeconds = 0f;
-
-        public static float MaxPredictionSeconds = 0.05f;
-
-        /// <summary>
-        /// Added to the computed prediction before clamping to min/max (can be negative).
-        /// </summary>
-        public static float PredictionBiasSeconds = 1.5f;
-
 #pragma warning disable CS0649
         [Inject]
         private OpenVRManager openVRManager;
@@ -98,56 +84,32 @@ namespace AlternativePlay.Models
         /// </remarks>
         public void PollTrackedDevices()
         {
-            // Get all tracked device poses from OpenVR API (predict forward toward photon time to reduce motion-to-photon latency)
-            var pTrackedDevicePoseArray = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
-            float predictedSecondsToPhotons = this.GetPredictedSecondsToPhotonsFromNow();
-            this.openVRManager.System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, predictedSecondsToPhotons, pTrackedDevicePoseArray);
+            const float predictionBiasSeconds = 0.0255f;
+
+            // Calculate time to predict into the future
+            float secondsSinceLastVsync = 0.0f;
+            ulong pullFrameCounter = 0;
+            this.openVRManager.System.GetTimeSinceLastVsync(ref secondsSinceLastVsync, ref pullFrameCounter);
+
+            ETrackedPropertyError error = ETrackedPropertyError.TrackedProp_Success;
+            float displayFrequency = this.openVRManager.System.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty.Prop_DisplayFrequency_Float, ref error);
+            float frameDuration = 1.0f / displayFrequency;
+            float fVsyncToPhotons = this.openVRManager.System.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty.Prop_SecondsFromVsyncToPhotons_Float, ref error);
+
+            float predictedSecondsFromNow = frameDuration - secondsSinceLastVsync + fVsyncToPhotons;
+            predictedSecondsFromNow += predictionBiasSeconds;
+
+            // Get all tracked device poses from OpenVR API
+            TrackedDevicePose_t[] trackedDevicePoseArray = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
+            this.openVRManager.System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, predictedSecondsFromNow, trackedDevicePoseArray);
 
             foreach (var device in this.TrackedDevices)
             {
-                if (device.Index < 0 || device.Index >= pTrackedDevicePoseArray.Length)
-                    continue;
-
-                var polledDevice = pTrackedDevicePoseArray[device.Index];
+                var polledDevice = trackedDevicePoseArray[device.Index];
                 Vector3 position = polledDevice.mDeviceToAbsoluteTracking.GetPosition();
                 Quaternion rotation = polledDevice.mDeviceToAbsoluteTracking.GetRotation();
                 device.Pose = new Pose(position, rotation);
             }
-        }
-
-        /// <summary>
-        /// Estimates seconds from now until display photons for OpenVR pose prediction.
-        /// Falls back to 0 when timing cannot be read (same as the previous fixed 0f argument).
-        /// Tuning: <see cref="FallbackDisplayFrequencyHz"/>, <see cref="MinPredictionSeconds"/>, <see cref="MaxPredictionSeconds"/>, <see cref="PredictionBiasSeconds"/>.
-        /// </summary>
-        private float GetPredictedSecondsToPhotonsFromNow()
-        {
-            var system = this.openVRManager?.System;
-            if (system == null) return 0f;
-
-            float secondsSinceLastVsync = 0f;
-            ulong frameCounter = 0;
-            if (!system.GetTimeSinceLastVsync(ref secondsSinceLastVsync, ref frameCounter))
-                return 0f;
-
-            var error = ETrackedPropertyError.TrackedProp_Success;
-            float displayFrequency = system.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty.Prop_DisplayFrequency_Float, ref error);
-            if (error != ETrackedPropertyError.TrackedProp_Success || displayFrequency <= 1f)
-                displayFrequency = FallbackDisplayFrequencyHz;
-
-            error = ETrackedPropertyError.TrackedProp_Success;
-            float secondsFromVsyncToPhotons = system.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty.Prop_SecondsFromVsyncToPhotons_Float, ref error);
-            if (error != ETrackedPropertyError.TrackedProp_Success)
-                secondsFromVsyncToPhotons = 0f;
-
-            float frameDuration = 1f / displayFrequency;
-            float predicted = frameDuration - secondsSinceLastVsync + secondsFromVsyncToPhotons;
-            predicted += PredictionBiasSeconds;
-
-            if (predicted < MinPredictionSeconds) predicted = MinPredictionSeconds;
-            if (predicted > MaxPredictionSeconds) predicted = MaxPredictionSeconds;
-
-            return predicted;
         }
 
         /// <summary>
@@ -176,12 +138,9 @@ namespace AlternativePlay.Models
         public Pose? GetPoseFromLeftController()
         {
             uint index = this.openVRManager.System.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.LeftHand);
-            if (index == OpenVR.k_unTrackedDeviceIndexInvalid)
-                return null;
+            var device = this.TrackedDevices.ElementAtOrDefault((int)index);
 
-            var device = this.TrackedDevices.FirstOrDefault(d => d.Index == (int)index);
-            if (device == null)
-                return null;
+            if (device == null) { return null; }
 
             return device.Pose;
         }
@@ -189,12 +148,9 @@ namespace AlternativePlay.Models
         public Pose? GetPoseFromRightController()
         {
             uint index = this.openVRManager.System.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.RightHand);
-            if (index == OpenVR.k_unTrackedDeviceIndexInvalid)
-                return null;
+            var device = this.TrackedDevices.ElementAtOrDefault((int)index);
 
-            var device = this.TrackedDevices.FirstOrDefault(d => d.Index == (int)index);
-            if (device == null)
-                return null;
+            if (device == null) { return null; }
 
             return device.Pose;
         }
