@@ -84,22 +84,32 @@ namespace AlternativePlay.Models
         /// </remarks>
         public void PollTrackedDevices()
         {
-            // Get all tracked device poses from OpenVR API
-            var pTrackedDevicePoseArray = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
-            this.openVRManager.System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, 0.0f, pTrackedDevicePoseArray);
+            const float predictionBiasSeconds = 0.0255f;
 
-            int i = 0;
-            this.TrackedDevices.ForEach(device =>
+            // Calculate time to predict into the future
+            float secondsSinceLastVsync = 0.0f;
+            ulong pullFrameCounter = 0;
+            this.openVRManager.System.GetTimeSinceLastVsync(ref secondsSinceLastVsync, ref pullFrameCounter);
+
+            ETrackedPropertyError error = ETrackedPropertyError.TrackedProp_Success;
+            float displayFrequency = this.openVRManager.System.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty.Prop_DisplayFrequency_Float, ref error);
+            float frameDuration = 1.0f / displayFrequency;
+            float fVsyncToPhotons = this.openVRManager.System.GetFloatTrackedDeviceProperty(OpenVR.k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty.Prop_SecondsFromVsyncToPhotons_Float, ref error);
+
+            float predictedSecondsFromNow = frameDuration - secondsSinceLastVsync + fVsyncToPhotons;
+            predictedSecondsFromNow += predictionBiasSeconds;
+
+            // Get all tracked device poses from OpenVR API
+            TrackedDevicePose_t[] trackedDevicePoseArray = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
+            this.openVRManager.System.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, predictedSecondsFromNow, trackedDevicePoseArray);
+
+            foreach (var device in this.TrackedDevices)
             {
-                TrackedDevicePose_t? polledDevice = pTrackedDevicePoseArray.ElementAtOrDefault(i);
-                if (polledDevice != null)
-                {
-                    Vector3 position = polledDevice.Value.mDeviceToAbsoluteTracking.GetPosition();
-                    Quaternion rotation = polledDevice.Value.mDeviceToAbsoluteTracking.GetRotation();
-                    device.Pose = new Pose(position, rotation);
-                }
-                i++;
-            });
+                var polledDevice = trackedDevicePoseArray[device.Index];
+                Vector3 position = polledDevice.mDeviceToAbsoluteTracking.GetPosition();
+                Quaternion rotation = polledDevice.mDeviceToAbsoluteTracking.GetRotation();
+                device.Pose = new Pose(position, rotation);
+            }
         }
 
         /// <summary>
