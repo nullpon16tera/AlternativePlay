@@ -58,12 +58,9 @@ namespace AlternativePlay
             }
             else
             {
-                if (!this.calibrated) return new Pose();
-
-                // Return adjusted position from the saber
+                // Default configuration (no tracker serial): follow controller directly.
                 Pose controllerPose = this.trackedDeviceManager.GetPoseFromLeftController() ?? new Pose();
-                Pose adjustedControllerPose = this.AdjustForPlayerOrigin(controllerPose);
-                return TrackedDeviceManager.GetTrackedObjectPose(this.savedLeftSaber, this.savedLeftController, adjustedControllerPose);
+                return this.AdjustForPlayerOrigin(controllerPose);
             }
         }
 
@@ -84,12 +81,9 @@ namespace AlternativePlay
             }
             else
             {
-                if (!this.calibrated) return new Pose();
-
-                // Return adjusted position from the saber
+                // Default configuration (no tracker serial): follow controller directly.
                 Pose controllerPose = this.trackedDeviceManager.GetPoseFromRightController() ?? new Pose();
-                Pose adjustedControllerPose = this.AdjustForPlayerOrigin(controllerPose);
-                return TrackedDeviceManager.GetTrackedObjectPose(this.savedRightSaber, this.savedRightController, adjustedControllerPose);
+                return this.AdjustForPlayerOrigin(controllerPose);
             }
         }
 
