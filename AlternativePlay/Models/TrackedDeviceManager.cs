@@ -148,7 +148,6 @@ namespace AlternativePlay.Models
                 return openXrPose;
             }
 
-            if (this.openVRManager?.System == null) { return null; }
             uint index = this.openVRManager.System.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.LeftHand);
             var device = this.TrackedDevices.ElementAtOrDefault((int)index);
 
@@ -164,7 +163,6 @@ namespace AlternativePlay.Models
                 return openXrPose;
             }
 
-            if (this.openVRManager?.System == null) { return null; }
             uint index = this.openVRManager.System.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.RightHand);
             var device = this.TrackedDevices.FirstOrDefault(d => d.Index == (int)index);
 
