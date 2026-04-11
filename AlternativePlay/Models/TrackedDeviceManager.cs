@@ -162,9 +162,6 @@ namespace AlternativePlay.Models
             return device.Pose;
         }
 
-        /// <summary>
-        /// Unity XR 入力（OpenXR 起動時など）から左手コントローラの pose のみを取得する。取得できなければ null。
-        /// </summary>
         public Pose? GetPoseFromOpenXrLeftController()
         {
             if (TryGetOpenXrControllerPose(InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Left, out Pose pose))
@@ -175,9 +172,6 @@ namespace AlternativePlay.Models
             return null;
         }
 
-        /// <summary>
-        /// Unity XR 入力（OpenXR 起動時など）から右手コントローラの pose のみを取得する。取得できなければ null。
-        /// </summary>
         public Pose? GetPoseFromOpenXrRightController()
         {
             if (TryGetOpenXrControllerPose(InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Right, out Pose pose))
