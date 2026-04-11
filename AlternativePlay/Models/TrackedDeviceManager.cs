@@ -38,6 +38,7 @@ namespace AlternativePlay.Models
 #pragma warning restore CS0649
 
         public List<OpenVRDeviceInfo> TrackedDevices { get; private set; } = new List<OpenVRDeviceInfo>();
+        public List<UnityEngine.XR.InputDevice> OpenXrDevices { get; private set; } = new List<UnityEngine.XR.InputDevice>();
 
         /// <summary>
         /// Updates the list of valid tracked devices and their properties only.  Use <see cref="PollTrackedDevices"/> to get the
@@ -143,11 +144,6 @@ namespace AlternativePlay.Models
 
         public Pose? GetPoseFromLeftController()
         {
-            if (TryGetOpenXrControllerPose(InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Left, out Pose openXrPose))
-            {
-                return openXrPose;
-            }
-
             uint index = this.openVRManager.System.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.LeftHand);
             var device = this.TrackedDevices.ElementAtOrDefault((int)index);
 
@@ -158,11 +154,6 @@ namespace AlternativePlay.Models
 
         public Pose? GetPoseFromRightController()
         {
-            if (TryGetOpenXrControllerPose(InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Right, out Pose openXrPose))
-            {
-                return openXrPose;
-            }
-
             uint index = this.openVRManager.System.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.RightHand);
             var device = this.TrackedDevices.FirstOrDefault(d => d.Index == (int)index);
 
@@ -171,20 +162,48 @@ namespace AlternativePlay.Models
             return device.Pose;
         }
 
-        private static bool TryGetOpenXrControllerPose(InputDeviceCharacteristics characteristics, out Pose pose)
+        /// <summary>
+        /// Unity XR 入力（OpenXR 起動時など）から左手コントローラの pose のみを取得する。取得できなければ null。
+        /// </summary>
+        public Pose? GetPoseFromOpenXrLeftController()
         {
-            var devices = new List<InputDevice>();
+            if (TryGetOpenXrControllerPose(InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Left, out Pose pose))
+            {
+                return pose;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Unity XR 入力（OpenXR 起動時など）から右手コントローラの pose のみを取得する。取得できなければ null。
+        /// </summary>
+        public Pose? GetPoseFromOpenXrRightController()
+        {
+            if (TryGetOpenXrControllerPose(InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Right, out Pose pose))
+            {
+                return pose;
+            }
+
+            return null;
+        }
+
+        private bool TryGetOpenXrControllerPose(InputDeviceCharacteristics characteristics, out Pose pose)
+        {
+            List<InputDevice> devices = this.OpenXrDevices;
             InputDevices.GetDevicesWithCharacteristics(characteristics, devices);
 
-            foreach (var device in devices)
+            var device = devices.FirstOrDefault(d =>
+                d.TryGetFeatureValue(CommonUsages.devicePosition, out _) &&
+                d.TryGetFeatureValue(CommonUsages.deviceRotation, out _)
+            );
+
+            if (device.isValid)
             {
-                bool hasPosition = device.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 position);
-                bool hasRotation = device.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion rotation);
-                if (hasPosition && hasRotation)
-                {
-                    pose = new Pose(position, rotation);
-                    return true;
-                }
+                device.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 position);
+                device.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion rotation);
+                pose = new Pose(position, rotation);
+                return true;
             }
 
             pose = default;

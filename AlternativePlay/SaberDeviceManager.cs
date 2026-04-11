@@ -26,6 +26,12 @@ namespace AlternativePlay
         private Pose savedRightController;
         private Pose savedRightSaber;
         private bool calibrated;
+        private bool leftRuntimeOffsetReady;
+        private bool rightRuntimeOffsetReady;
+        private Vector3 leftRuntimeLocalOffsetPosition;
+        private Quaternion leftRuntimeLocalOffsetRotation;
+        private Vector3 rightRuntimeLocalOffsetPosition;
+        private Quaternion rightRuntimeLocalOffsetRotation;
 
         private void Start()
         {
@@ -61,7 +67,7 @@ namespace AlternativePlay
                 if (!this.calibrated) return new Pose();
 
                 // Return adjusted position from the saber
-                Pose controllerPose = this.trackedDeviceManager.GetPoseFromLeftController() ?? new Pose();
+                Pose controllerPose = this.trackedDeviceManager.GetPoseFromOpenXrLeftController() ?? this.trackedDeviceManager.GetPoseFromLeftController() ?? new Pose();
                 Pose adjustedControllerPose = this.AdjustForPlayerOrigin(controllerPose);
                 return TrackedDeviceManager.GetTrackedObjectPose(this.savedLeftSaber, this.savedLeftController, adjustedControllerPose);
             }
@@ -87,7 +93,7 @@ namespace AlternativePlay
                 if (!this.calibrated) return new Pose();
 
                 // Return adjusted position from the saber
-                Pose controllerPose = this.trackedDeviceManager.GetPoseFromRightController() ?? new Pose();
+                Pose controllerPose = this.trackedDeviceManager.GetPoseFromOpenXrRightController() ?? this.trackedDeviceManager.GetPoseFromRightController() ?? new Pose();
                 Pose adjustedControllerPose = this.AdjustForPlayerOrigin(controllerPose);
                 return TrackedDeviceManager.GetTrackedObjectPose(this.savedRightSaber, this.savedRightController, adjustedControllerPose);
             }
