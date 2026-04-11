@@ -26,12 +26,6 @@ namespace AlternativePlay
         private Pose savedRightController;
         private Pose savedRightSaber;
         private bool calibrated;
-        private bool leftRuntimeOffsetReady;
-        private bool rightRuntimeOffsetReady;
-        private Vector3 leftRuntimeLocalOffsetPosition;
-        private Quaternion leftRuntimeLocalOffsetRotation;
-        private Vector3 rightRuntimeLocalOffsetPosition;
-        private Quaternion rightRuntimeLocalOffsetRotation;
 
         private void Start()
         {
