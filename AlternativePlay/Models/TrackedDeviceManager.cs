@@ -84,7 +84,9 @@ namespace AlternativePlay.Models
         /// </remarks>
         public void PollTrackedDevices()
         {
-            const float predictionBiasSeconds = 0.0255f;
+            const float minPredictionSeconds = 0.0f;
+            const float maxPredictionSeconds = 0.1f;
+            const float predictionBiasSeconds = 0.0225f;
 
             // Calculate time to predict into the future
             float secondsSinceLastVsync = 0.0f;
@@ -98,6 +100,9 @@ namespace AlternativePlay.Models
 
             float predictedSecondsFromNow = frameDuration - secondsSinceLastVsync + fVsyncToPhotons;
             predictedSecondsFromNow += predictionBiasSeconds;
+
+            if (predictedSecondsFromNow < minPredictionSeconds) { predictedSecondsFromNow = minPredictionSeconds; }
+            if (predictedSecondsFromNow > maxPredictionSeconds) { predictedSecondsFromNow = maxPredictionSeconds; }
 
             // Get all tracked device poses from OpenVR API
             TrackedDevicePose_t[] trackedDevicePoseArray = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
