@@ -22,6 +22,18 @@ namespace AlternativePlay
             // Do nothing if we aren't playing Darth Maul
             if (this.configuration.Current.PlayMode != PlayMode.DarthMaul) { return; }
 
+            // ReverseLeftSaber is reused as a temporary "switched from TWO to ONE" flag.
+            // Clear it on start so a previous play session cannot leave ONE stuck.
+            if (this.configuration.Current.ControllerCount >= ControllerCountEnum.Two)
+            {
+                this.configuration.Current.ControllerCount = ControllerCountEnum.Two;
+            }
+            if (this.configuration.Current.ReverseLeftSaber)
+            {
+                this.configuration.Current.ControllerCount = ControllerCountEnum.Two;
+            }
+            this.configuration.Current.ReverseLeftSaber = false;
+
             Utilities.CheckAndDisableForTrackerTransforms(this.configuration.Current.LeftTracker);
             Utilities.CheckAndDisableForTrackerTransforms(this.configuration.Current.RightTracker);
         }
@@ -34,16 +46,81 @@ namespace AlternativePlay
                 return;
             }
 
-            if (this.configuration.Current.UseTriggerToSeparate)
+            if (this.Split)
             {
-                // Check to see if the trigger has been pressed
-                bool leftTriggerPressed = this.inputManager.GetLeftTriggerClicked();
-                bool rightTriggerPressed = this.inputManager.GetRightTriggerClicked();
-
-                if (leftTriggerPressed || rightTriggerPressed)
+                // Split: either trigger rejoins the Maul
+                if (this.inputManager.GetLeftTriggerClicked() || this.inputManager.GetRightTriggerClicked())
                 {
-                    this.Split = !this.Split;
+                    this.Split = false;
                 }
+            }
+            else if (this.configuration.Current.ControllerCount == ControllerCountEnum.Two)
+            {
+                // RemoveOtherSaber is reused as "TWO / ONE Switch" for Darth Maul
+                if (this.configuration.Current.RemoveOtherSaber)
+                {
+                    if (this.inputManager.GetBothTriggerClicked())
+                    {
+                        // Consume individual trigger clicks so they don't also fire below
+                        this.inputManager.GetLeftTriggerClicked();
+                        this.inputManager.GetRightTriggerClicked();
+                        if (this.configuration.Current.UseTriggerToSeparate)
+                        {
+                            this.Split = true;
+                        }
+                    }
+                    else if (this.inputManager.GetLeftTriggerClicked())
+                    {
+                        this.configuration.Current.ControllerCount = ControllerCountEnum.One;
+                        this.configuration.Current.UseLeft = true;
+                        this.configuration.Current.ReverseLeftSaber = true; // temporary ONE from TWO
+                    }
+                    else if (this.inputManager.GetRightTriggerClicked())
+                    {
+                        this.configuration.Current.ControllerCount = ControllerCountEnum.One;
+                        this.configuration.Current.UseLeft = false;
+                        this.configuration.Current.ReverseLeftSaber = true; // temporary ONE from TWO
+                    }
+                }
+                else if (this.configuration.Current.UseTriggerToSeparate &&
+                    (this.inputManager.GetLeftTriggerClicked() || this.inputManager.GetRightTriggerClicked()))
+                {
+                    this.Split = true;
+                }
+            }
+            else if (this.configuration.Current.ReverseLeftSaber && this.inputManager.GetBothTriggerClicked())
+            {
+                // Temporary ONE: both triggers return to TWO
+                this.inputManager.GetLeftTriggerClicked();
+                this.inputManager.GetRightTriggerClicked();
+                this.configuration.Current.ControllerCount = ControllerCountEnum.Two;
+                this.configuration.Current.ReverseLeftSaber = false;
+            }
+            else if (this.configuration.Current.UseLeft)
+            {
+                if (this.inputManager.GetLeftTriggerClicked())
+                {
+                    if (this.configuration.Current.UseTriggerToSeparate)
+                    {
+                        this.Split = true;
+                    }
+                }
+                else if (this.inputManager.GetRightTriggerClicked() && this.configuration.Current.UseTriggerToSwitchHands)
+                {
+                    // Empty-hand trigger transfers the Maul to that hand
+                    this.configuration.Current.UseLeft = false;
+                }
+            }
+            else if (this.inputManager.GetRightTriggerClicked())
+            {
+                if (this.configuration.Current.UseTriggerToSeparate)
+                {
+                    this.Split = true;
+                }
+            }
+            else if (this.inputManager.GetLeftTriggerClicked() && this.configuration.Current.UseTriggerToSwitchHands)
+            {
+                this.configuration.Current.UseLeft = true;
             }
 
             this.TransformSabers();
@@ -90,10 +167,11 @@ namespace AlternativePlay
         /// </summary>
         private void TransformOneControllerMaul()
         {
+            bool useLeft = this.configuration.Current.UseLeft;
             float sep = 1.0f * this.configuration.Current.MaulDistance / 100.0f;
 
             // Get the Pose of the base saber and calculate the rotated pose from it
-            Pose basePose = this.configuration.Current.UseLeft
+            Pose basePose = useLeft
                 ? this.saberDeviceManager.GetLeftSaberPose(this.configuration.Current.LeftTracker)
                 : this.saberDeviceManager.GetRightSaberPose(this.configuration.Current.RightTracker);
 
@@ -101,14 +179,25 @@ namespace AlternativePlay
             Vector3 separation = new Vector3(0.0f, 0.0f, sep * 2.0f);
             rotatedPose.position += (rotatedPose.rotation * separation);
 
-            // Determine which pose belongs to which saber and set them
-            Pose leftSaberPose = this.configuration.Current.ReverseMaulDirection ? basePose : rotatedPose;
-            Pose rightSaberPose = this.configuration.Current.ReverseMaulDirection ? rotatedPose : basePose;
-            if (this.configuration.Current.UseLeft)
+            // When ReverseLeftSaber is set (temporary ONE from TWO), use hand-based mapping.
+            // Otherwise use the normal ReverseMaulDirection / UseLeft mapping.
+            Pose leftSaberPose;
+            Pose rightSaberPose;
+            bool useRotatedAsLeft = this.configuration.Current.ReverseLeftSaber
+                ? useLeft
+                : (useLeft == this.configuration.Current.ReverseMaulDirection);
+
+            if (useRotatedAsLeft)
             {
-                leftSaberPose = this.configuration.Current.ReverseMaulDirection ? rotatedPose : basePose;
-                rightSaberPose = this.configuration.Current.ReverseMaulDirection ? basePose : rotatedPose;
+                leftSaberPose = rotatedPose;
+                rightSaberPose = basePose;
             }
+            else
+            {
+                leftSaberPose = basePose;
+                rightSaberPose = rotatedPose;
+            }
+
             this.saberDeviceManager.SetLeftSaberPose(leftSaberPose);
             this.saberDeviceManager.SetRightSaberPose(rightSaberPose);
         }

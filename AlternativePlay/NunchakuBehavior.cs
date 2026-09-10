@@ -73,11 +73,13 @@ namespace AlternativePlay
             switch (this.HeldState)
             {
                 case Held.Left:
-                    leftSaberRigid.isKinematic = true;
-                    rightSaberRigid.isKinematic = false;
+                    // Pin the head (First/RightNunchaku) to the left controller.
+                    // Using Last for left-hand hold broke short chain lengths (10–20cm).
+                    leftSaberRigid.isKinematic = false;
+                    rightSaberRigid.isKinematic = true;
 
-                    leftChain.gameObject.transform.position = leftSaberPose.position * 10.0f;
-                    leftChain.gameObject.transform.rotation = leftSaberPose.rotation * Quaternion.Euler(0.0f, -90.0f, 0.0f);
+                    rightChain.gameObject.transform.position = leftSaberPose.position * 10.0f;
+                    rightChain.gameObject.transform.rotation = leftSaberPose.rotation * Quaternion.Euler(0.0f, 90.0f, 0.0f);
                     break;
 
                 case Held.Right:
@@ -127,7 +129,6 @@ namespace AlternativePlay
             Pose leftSaberPose = this.saberDeviceManager.GetLeftSaberPose(this.configuration.Current.LeftTracker);
             Pose rightSaberPose = this.saberDeviceManager.GetRightSaberPose(this.configuration.Current.RightTracker);
 
-            var rightChain = this.physicsChain.First();
             var leftChain = this.physicsChain.Last();
 
             Pose newLeftSaberPose;
@@ -136,23 +137,23 @@ namespace AlternativePlay
             switch (this.HeldState)
             {
                 case Held.Left:
-                    // Move the left saber to the left controller position and right saber to the end of the chain
-                    Pose rightChainPose = new Pose(
-                        rightChain.gameObject.transform.position / 10.0f,
-                        rightChain.gameObject.transform.rotation * Quaternion.Euler(0.0f, 90.0f, 0.0f));
-
-                    newLeftSaberPose = this.configuration.Current.ReverseNunchaku ? rightChainPose : leftSaberPose.Reverse();
-                    newRightSaberPose = this.configuration.Current.ReverseNunchaku ? leftSaberPose.Reverse() : rightChainPose;
-                    break;
-
-                case Held.Right:
-                    // Move the right saber to the right controller position and the left saber to the end of the chain
-                    Pose leftChainPose = new Pose(
+                    // Head is pinned to left controller; free end is Last (LeftNunchaku)
+                    Pose leftHeldFreePose = new Pose(
                         leftChain.gameObject.transform.position / 10.0f,
                         leftChain.gameObject.transform.rotation * Quaternion.Euler(0.0f, -90.0f, 0.0f));
 
-                    newRightSaberPose = this.configuration.Current.ReverseNunchaku ? leftChainPose : rightSaberPose.Reverse();
-                    newLeftSaberPose = this.configuration.Current.ReverseNunchaku ? rightSaberPose.Reverse() : leftChainPose;
+                    newLeftSaberPose = this.configuration.Current.ReverseNunchaku ? leftHeldFreePose : leftSaberPose.Reverse();
+                    newRightSaberPose = this.configuration.Current.ReverseNunchaku ? leftSaberPose.Reverse() : leftHeldFreePose;
+                    break;
+
+                case Held.Right:
+                    // Head is pinned to right controller; free end is Last (LeftNunchaku)
+                    Pose rightHeldFreePose = new Pose(
+                        leftChain.gameObject.transform.position / 10.0f,
+                        leftChain.gameObject.transform.rotation * Quaternion.Euler(0.0f, -90.0f, 0.0f));
+
+                    newRightSaberPose = this.configuration.Current.ReverseNunchaku ? rightHeldFreePose : rightSaberPose.Reverse();
+                    newLeftSaberPose = this.configuration.Current.ReverseNunchaku ? rightSaberPose.Reverse() : rightHeldFreePose;
                     break;
 
                 case Held.Both:

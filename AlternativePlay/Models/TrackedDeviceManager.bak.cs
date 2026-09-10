@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -45,12 +45,6 @@ namespace AlternativePlay.Models
         /// </summary>
         public void LoadTrackedDeviceProperties()
         {
-            if (this.openVRManager.System == null)
-            {
-                this.TrackedDevices = new List<OpenVRDeviceInfo>();
-                return;
-            }
-
             // Get a list of all valid tracked devices up to OpenVR's maximum
             this.TrackedDevices = Enumerable.Range(0, (int)OpenVR.k_unMaxTrackedDeviceCount).Select(i =>
                 new OpenVRDeviceInfo
@@ -91,11 +85,6 @@ namespace AlternativePlay.Models
         /// </remarks>
         public void PollTrackedDevices()
         {
-            if (this.openVRManager.System == null)
-            {
-                return;
-            }
-
             const float minPredictionSeconds = 0.0f;
             const float maxPredictionSeconds = 0.1f;
             const float predictionBiasSeconds = 0.0225f;
@@ -154,17 +143,13 @@ namespace AlternativePlay.Models
 
         public Pose? GetPoseFromLeftController()
         {
-            if (TryGetOpenXrControllerPose(
-                InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Left,
-                out Pose openXrPose))
+            if (TryGetOpenXrControllerPose(InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Left, out Pose openXrPose))
             {
                 return openXrPose;
             }
 
-            if (this.openVRManager.System == null) { return null; }
-
             uint index = this.openVRManager.System.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.LeftHand);
-            var device = this.TrackedDevices.FirstOrDefault(d => d.Index == (int)index);
+            var device = this.TrackedDevices.ElementAtOrDefault((int)index);
 
             if (device == null) { return null; }
 
@@ -173,14 +158,10 @@ namespace AlternativePlay.Models
 
         public Pose? GetPoseFromRightController()
         {
-            if (TryGetOpenXrControllerPose(
-                InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Right,
-                out Pose openXrPose))
+            if (TryGetOpenXrControllerPose(InputDeviceCharacteristics.HeldInHand | InputDeviceCharacteristics.Controller | InputDeviceCharacteristics.Right, out Pose openXrPose))
             {
                 return openXrPose;
             }
-
-            if (this.openVRManager.System == null) { return null; }
 
             uint index = this.openVRManager.System.GetTrackedDeviceIndexForControllerRole(ETrackedControllerRole.RightHand);
             var device = this.TrackedDevices.FirstOrDefault(d => d.Index == (int)index);

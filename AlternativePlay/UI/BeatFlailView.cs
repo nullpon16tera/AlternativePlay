@@ -166,6 +166,34 @@ namespace AlternativePlay.UI
             }
         }
 
+        /// <summary>
+        /// Show/hide left flail chain. Stored inverted in ReverseLeftSaber for Flail profiles.
+        /// </summary>
+        [UIValue(nameof(ShowLeftFlailChain))]
+        private bool ShowLeftFlailChain
+        {
+            get => !this.settings.ReverseLeftSaber;
+            set
+            {
+                this.settings.ReverseLeftSaber = !value;
+                this.configuration.SaveConfiguration();
+            }
+        }
+
+        /// <summary>
+        /// Show/hide right flail chain. Stored inverted in ReverseRightSaber for Flail profiles.
+        /// </summary>
+        [UIValue(nameof(ShowRightFlailChain))]
+        private bool ShowRightFlailChain
+        {
+            get => !this.settings.ReverseRightSaber;
+            set
+            {
+                this.settings.ReverseRightSaber = !value;
+                this.configuration.SaveConfiguration();
+            }
+        }
+
         [UIAction(nameof(OnResetGravity))]
         private void OnResetGravity()
         {
@@ -188,6 +216,8 @@ namespace AlternativePlay.UI
             this.NotifyPropertyChanged(nameof(this.RightFlailLength));
             this.NotifyPropertyChanged(nameof(this.Gravity));
             this.NotifyPropertyChanged(nameof(this.MoveNotesBack));
+            this.NotifyPropertyChanged(nameof(this.ShowLeftFlailChain));
+            this.NotifyPropertyChanged(nameof(this.ShowRightFlailChain));
         }
 
         #region Tracker Selection Members

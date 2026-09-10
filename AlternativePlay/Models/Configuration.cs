@@ -112,6 +112,14 @@ namespace AlternativePlay.Models
         /// </summary>
         public void SaveConfiguration()
         {
+            // ReverseLeftSaber is reused as a temporary TWO→ONE runtime flag for Darth Maul.
+            // Do not persist that temporary state.
+            if (this.Current.PlayMode == PlayMode.DarthMaul && this.Current.ReverseLeftSaber)
+            {
+                this.Current.ControllerCount = ControllerCountEnum.Two;
+                this.Current.ReverseLeftSaber = false;
+            }
+
             string json = JsonConvert.SerializeObject(this.ConfigurationData, Formatting.Indented);
             File.WriteAllText(configurationFile, json);
         }

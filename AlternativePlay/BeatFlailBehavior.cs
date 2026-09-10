@@ -40,17 +40,20 @@ namespace AlternativePlay
             if (this.configuration.Current.PlayMode != PlayMode.BeatFlail) { return; }
 
             // Create the GameObjects for the flails
+            // ReverseLeftSaber / ReverseRightSaber are reused as "hide chain" flags for Flail.
             if (this.configuration.Current.LeftFlailMode == BeatFlailMode.Flail) 
             {
                 this.leftPhysicsFlail = this.CreatePhysicsChain("Left", this.configuration.Current.LeftFlailLength / 100.0f);
-                this.leftLinkMeshes = Utilities.CreateLinkMeshes(this.assetLoaderBehavior, this.leftPhysicsFlail.Count, this.configuration.Current.LeftFlailLength / 100.0f);
+                int leftMeshCount = this.configuration.Current.ReverseLeftSaber ? 1 : this.leftPhysicsFlail.Count;
+                this.leftLinkMeshes = Utilities.CreateLinkMeshes(this.assetLoaderBehavior, leftMeshCount, this.configuration.Current.LeftFlailLength / 100.0f);
                 this.leftHandleMesh = this.CreateFlailHandle("LeftHandle", this.configuration.Current.LeftHandleLength / 100.0f);
             }
 
             if (this.configuration.Current.RightFlailMode == BeatFlailMode.Flail)
             {
                 this.rightPhysicsFlail = this.CreatePhysicsChain("Right", this.configuration.Current.RightFlailLength / 100.0f);
-                this.rightLinkMeshes = Utilities.CreateLinkMeshes(this.assetLoaderBehavior, this.rightPhysicsFlail.Count, this.configuration.Current.RightFlailLength / 100.0f);
+                int rightMeshCount = this.configuration.Current.ReverseRightSaber ? 1 : this.rightPhysicsFlail.Count;
+                this.rightLinkMeshes = Utilities.CreateLinkMeshes(this.assetLoaderBehavior, rightMeshCount, this.configuration.Current.RightFlailLength / 100.0f);
                 this.rightHandleMesh = this.CreateFlailHandle("RightHandle", this.configuration.Current.RightHandleLength / 100.0f);
             }
 
@@ -142,9 +145,7 @@ namespace AlternativePlay
 
                     // Move handle based on the original saber position
                     Pose leftSaberPose = this.saberDeviceManager.GetLeftSaberPose(this.configuration.Current.LeftTracker);
-                    float oneChainDistance = this.configuration.Current.LeftFlailLength / 100.0f / (this.leftPhysicsFlail.Count - 1);
-                    Vector3 moveHandleUp = leftSaberPose.rotation * new Vector3(0.0f, 0.0f, oneChainDistance); // Move handle forward one chain length
-                    this.leftHandleMesh.transform.position = leftSaberPose.position + moveHandleUp;
+                    this.leftHandleMesh.transform.position = leftSaberPose.position;
                     this.leftHandleMesh.transform.rotation = leftSaberPose.rotation;
 
                    break;
@@ -173,9 +174,7 @@ namespace AlternativePlay
 
                     // Move handle based on the original saber position
                     Pose rightSaberPose = this.saberDeviceManager.GetRightSaberPose(this.configuration.Current.RightTracker);
-                    float oneChainDistance = this.configuration.Current.RightFlailLength / 100.0f / (this.rightPhysicsFlail.Count - 1);
-                    Vector3 moveHandleUp = rightSaberPose.rotation * new Vector3(0.0f, 0.0f, oneChainDistance); // Move handle forward one chain length
-                    this.rightHandleMesh.transform.position = rightSaberPose.position + moveHandleUp;
+                    this.rightHandleMesh.transform.position = rightSaberPose.position;
                     this.rightHandleMesh.transform.rotation = rightSaberPose.rotation;
                     break;
 
@@ -266,8 +265,13 @@ namespace AlternativePlay
 
             int segmentCount = (int)(flailTotalLength / flailSegmentLength);
 
-            // Instantiate One-Off Game Objects
+            // Instantiate parent handle. Length 0 hides the handle visuals.
             var handle = new GameObject(name);
+            if (segmentCount == 0)
+            {
+                return handle;
+            }
+
             var topCap = GameObject.Instantiate(this.assetLoaderBehavior.FlailTopCapPrefab, Vector3.zero, Quaternion.identity, handle.transform);
             var bottomCapPosition = new Vector3(0.0f, 0.0f, (flailSegmentLength * segmentCount * -1.0f) - topCapLength - bottomCapLength);
             var bottomCap = GameObject.Instantiate(this.assetLoaderBehavior.FlailBottomCapPrefab, bottomCapPosition, Quaternion.identity, handle.transform);

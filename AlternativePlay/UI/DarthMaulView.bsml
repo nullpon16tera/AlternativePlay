@@ -22,15 +22,17 @@
 				<horizontal pad-right="1">
 					<img preserve-aspect="true" pref-width="8" pref-height="8" source="~UseLeftControllerIcon" />
 				</horizontal>
-				<checkbox-setting text="Use Left Controller" value="UseLeftController" bind-value="true" apply-on-change="true" hover-hint="Move the sabers to the left controller for one controller mode only" />
+				<checkbox-setting text="Use Left Controller" value="UseLeftController" bind-value="true" apply-on-change="true" hover-hint="Initial holding hand in ONE mode" />
 			</horizontal>
 			<horizontal>
 				<horizontal pad-right="1">
 					<img preserve-aspect="true" pref-width="8" pref-height="8" source="~ReverseDarthMaulIcon" />
 				</horizontal>
-				<checkbox-setting text="Reverse Maul Direction" value="ReverseDarthMaul" bind-value="true" apply-on-change="true" hover-hint="Invert the saber directions, useful for one controller mode" />
+				<checkbox-setting text="Reverse Maul Direction" value="ReverseDarthMaul" bind-value="true" apply-on-change="true" hover-hint="Invert the saber directions" />
 			</horizontal>
-			<checkbox-setting text="Use Trigger to Separate" value="UseTriggerToSeparate" bind-value="true" apply-on-change="true" hover-hint="Press any trigger to separate split the sabers" />
+			<checkbox-setting text="Use Trigger to Switch Hands" value="UseTriggerToSwitchHands" bind-value="true" apply-on-change="true" hover-hint="ONE: empty-hand trigger transfers the Maul to that hand" />
+			<checkbox-setting text="TWO / ONE Switch (TWO only)" value="AllowTwoOneSwitch" bind-value="true" apply-on-change="true" hover-hint="TWO: single trigger enters ONE on that hand; temporary ONE: both triggers return to TWO" />
+			<checkbox-setting text="Use Trigger to Separate" value="UseTriggerToSeparate" bind-value="true" apply-on-change="true" hover-hint="TWO with TWO/ONE switching: both triggers Separate. ONE: holding-hand trigger Separates. Split: either trigger rejoins." />
 			<increment-setting text="Separation Amount" value="SeparationAmount" bind-value="true" apply-on-change="true" integer-only="true" min="0" max="50" increment="1" hover-hint="The distance between sabers" />
 		</vertical>
 
@@ -48,7 +50,7 @@
       </horizontal>
       <horizontal>
         <clickable-text text="Right Hand" italics="true" font-size="4" highlight-color="#FFFFFF" align="MidlineLeft" hover-hint="Choose a tracker to attach the right saber to"/>
-        <button pref-width="50" preferred-height="8" hover-hint="~RightTrackerHoverHint" text="" on-click="OnShowSelectRightTracker">
+        <button preferred-width="50" preferred-height="8" hover-hint="~RightTrackerHoverHint" text="" on-click="OnShowSelectRightTracker">
           <horizontal horizontal-fit="PreferredSize" child-expand-width="false" spacing="1">
             <img preserve-aspect="true" pref-width="4" pref-height="4" source="~RightTrackerIcon" />
             <text text="~RightTrackerSerial" italics="true" align="MidlineLeft" font-size="4"/>

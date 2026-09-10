@@ -21,6 +21,16 @@ namespace AlternativePlay.UI
 
         public void SetPlayModeSettings(PlayModeSettings Settings)
         {
+            // ReverseLeftSaber is a temporary runtime flag for TWO→ONE switching; clear if persisted
+            if (Settings.ReverseLeftSaber)
+            {
+                Settings.ControllerCount = ControllerCountEnum.Two;
+                Settings.ReverseLeftSaber = false;
+            }
+            if (Settings.ControllerCount >= ControllerCountEnum.Two)
+            {
+                Settings.ControllerCount = ControllerCountEnum.Two;
+            }
             this.settings = Settings;
         }
 
@@ -81,6 +91,31 @@ namespace AlternativePlay.UI
             }
         }
 
+        [UIValue(nameof(UseTriggerToSwitchHands))]
+        private bool UseTriggerToSwitchHands
+        {
+            get => this.settings.UseTriggerToSwitchHands;
+            set
+            {
+                this.settings.UseTriggerToSwitchHands = value;
+                this.configuration.SaveConfiguration();
+            }
+        }
+
+        /// <summary>
+        /// Reuses RemoveOtherSaber for Darth Maul TWO↔ONE switching during play.
+        /// </summary>
+        [UIValue(nameof(AllowTwoOneSwitch))]
+        private bool AllowTwoOneSwitch
+        {
+            get => this.settings.RemoveOtherSaber;
+            set
+            {
+                this.settings.RemoveOtherSaber = value;
+                this.configuration.SaveConfiguration();
+            }
+        }
+
         [UIValue(nameof(UseTriggerToSeparate))]
         private bool UseTriggerToSeparate
         {
@@ -108,6 +143,8 @@ namespace AlternativePlay.UI
             this.NotifyPropertyChanged(nameof(this.ControllerChoice));
             this.NotifyPropertyChanged(nameof(this.UseLeftController));
             this.NotifyPropertyChanged(nameof(this.ReverseDarthMaul));
+            this.NotifyPropertyChanged(nameof(this.UseTriggerToSwitchHands));
+            this.NotifyPropertyChanged(nameof(this.AllowTwoOneSwitch));
             this.NotifyPropertyChanged(nameof(this.UseTriggerToSeparate));
             this.NotifyPropertyChanged(nameof(this.SeparationAmount));
 
