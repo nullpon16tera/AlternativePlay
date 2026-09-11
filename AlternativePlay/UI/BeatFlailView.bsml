@@ -35,10 +35,10 @@
                          formatter="LengthFormatter" hover-hint="The distance between the handle and the ball on the right" />
 
 
-      <checkbox-setting text="Left Show Chain" value="ShowLeftFlailChain" bind-value="true" apply-on-change="true" hover-hint="Show or hide the left flail chain." />
-      <checkbox-setting text="Right Show Chain" value="ShowRightFlailChain" bind-value="true" apply-on-change="true" hover-hint="Show or hide the right flail chain." />
-      <increment-setting text="Move Notes Back Distance" value="MoveNotesBack" bind-value="true" apply-on-change="true" integer-only="true" min="0" max="150" increment="10"
-                         formatter="LengthFormatter" hover-hint="Move notes back to account for chain length." />
+      <horizontal pad-top="2">
+        <checkbox-setting text="Left Show Chain" value="ShowLeftFlailChain" bind-value="true" apply-on-change="true" hover-hint="Show or hide the left flail chain." />
+        <checkbox-setting text="Right Show Chain" value="ShowRightFlailChain" bind-value="true" apply-on-change="true" hover-hint="Show or hide the right flail chain." />
+      </horizontal>
       <horizontal preferred-width="75" horizontal-fit="PreferredSize" pad-bottom="3">
         <slider-setting preferred-width="55" text="Gravity" value="Gravity" bind-value="true" apply-on-change="true" integer-only="false" min="0" max="5" increment="0.1" get-event="RefreshGravity" hover-hint="Amount of G force applied to the Flail (multiple of -9.81 m/s^2)" />
         <button pref-width="18" preferred-height="8" text="Reset" pad-left="2" hover-hint='Reset gravity to 3.5' on-click="OnResetGravity"/>

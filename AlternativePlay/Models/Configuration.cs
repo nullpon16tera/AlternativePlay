@@ -112,14 +112,6 @@ namespace AlternativePlay.Models
         /// </summary>
         public void SaveConfiguration()
         {
-            // ReverseLeftSaber is reused as a temporary TWO→ONE runtime flag for Darth Maul.
-            // Do not persist that temporary state.
-            if (this.Current.PlayMode == PlayMode.DarthMaul && this.Current.ReverseLeftSaber)
-            {
-                this.Current.ControllerCount = ControllerCountEnum.Two;
-                this.Current.ReverseLeftSaber = false;
-            }
-
             string json = JsonConvert.SerializeObject(this.ConfigurationData, Formatting.Indented);
             File.WriteAllText(configurationFile, json);
         }
@@ -184,6 +176,29 @@ namespace AlternativePlay.Models
                 int clamped = Math.Min(playModeSettings.MoveNotesBack, 150);
                 clamped = Math.Max(clamped, 0);
                 playModeSettings.MoveNotesBack = clamped;
+
+                // Migrate 2026-09-10 rebuild-era Flail visibility flags into dedicated fields.
+                if (playModeSettings.PlayMode == PlayMode.BeatFlail)
+                {
+                    if (!playModeSettings.ShowLeftFlailChain.HasValue)
+                    {
+                        playModeSettings.ShowLeftFlailChain = !playModeSettings.ReverseLeftSaber;
+                        playModeSettings.ReverseLeftSaber = false;
+                    }
+                    if (!playModeSettings.ShowRightFlailChain.HasValue)
+                    {
+                        playModeSettings.ShowRightFlailChain = !playModeSettings.ReverseRightSaber;
+                        playModeSettings.ReverseRightSaber = false;
+                    }
+                }
+
+                // Compatibility cleanup for the 2026-09-10 rebuild, where
+                // ReverseLeftSaber was temporarily used as a Darth Maul TWO→ONE runtime flag.
+                if (playModeSettings.PlayMode == PlayMode.DarthMaul && playModeSettings.ReverseLeftSaber)
+                {
+                    playModeSettings.ControllerCount = ControllerCountEnum.Two;
+                    playModeSettings.ReverseLeftSaber = false;
+                }
             }
         }
     }

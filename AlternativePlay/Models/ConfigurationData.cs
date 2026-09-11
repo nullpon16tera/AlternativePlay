@@ -83,6 +83,14 @@ namespace AlternativePlay.Models
         public int RightFlailLength { get; set; } = 80; // in centimetres
         public int LeftHandleLength { get; set; } = 40; // in centimetres
         public int RightHandleLength { get; set; } = 40; // in centimetres
+
+        // Dedicated Flail visibility settings. Nullable preserves compatibility with
+        // configurations created by the 2026-09-10 rebuild, which stored these
+        // values inverted in ReverseLeftSaber / ReverseRightSaber.
+        public bool? ShowLeftFlailChain { get; set; }
+        public bool? ShowRightFlailChain { get; set; }
+
+        // Kept for configuration-file compatibility. The Pre-Twin UI does not expose it.
         public int MoveNotesBack { get; set; } = 0; // in centimetres
 
         // Gameplay Changes Options

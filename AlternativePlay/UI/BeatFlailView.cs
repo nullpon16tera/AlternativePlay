@@ -155,41 +155,24 @@ namespace AlternativePlay.UI
             }
         }
 
-        [UIValue(nameof(MoveNotesBack))]
-        private int MoveNotesBack
-        {
-            get => this.settings.MoveNotesBack;
-            set
-            {
-                this.settings.MoveNotesBack = value;
-                this.configuration.SaveConfiguration();
-            }
-        }
-
-        /// <summary>
-        /// Show/hide left flail chain. Stored inverted in ReverseLeftSaber for Flail profiles.
-        /// </summary>
         [UIValue(nameof(ShowLeftFlailChain))]
         private bool ShowLeftFlailChain
         {
-            get => !this.settings.ReverseLeftSaber;
+            get => this.settings.ShowLeftFlailChain ?? true;
             set
             {
-                this.settings.ReverseLeftSaber = !value;
+                this.settings.ShowLeftFlailChain = value;
                 this.configuration.SaveConfiguration();
             }
         }
 
-        /// <summary>
-        /// Show/hide right flail chain. Stored inverted in ReverseRightSaber for Flail profiles.
-        /// </summary>
         [UIValue(nameof(ShowRightFlailChain))]
         private bool ShowRightFlailChain
         {
-            get => !this.settings.ReverseRightSaber;
+            get => this.settings.ShowRightFlailChain ?? true;
             set
             {
-                this.settings.ReverseRightSaber = !value;
+                this.settings.ShowRightFlailChain = value;
                 this.configuration.SaveConfiguration();
             }
         }
@@ -215,7 +198,6 @@ namespace AlternativePlay.UI
             this.NotifyPropertyChanged(nameof(this.LeftFlailLength));
             this.NotifyPropertyChanged(nameof(this.RightFlailLength));
             this.NotifyPropertyChanged(nameof(this.Gravity));
-            this.NotifyPropertyChanged(nameof(this.MoveNotesBack));
             this.NotifyPropertyChanged(nameof(this.ShowLeftFlailChain));
             this.NotifyPropertyChanged(nameof(this.ShowRightFlailChain));
         }

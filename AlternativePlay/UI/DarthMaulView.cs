@@ -21,16 +21,6 @@ namespace AlternativePlay.UI
 
         public void SetPlayModeSettings(PlayModeSettings Settings)
         {
-            // ReverseLeftSaber is a temporary runtime flag for TWO→ONE switching; clear if persisted
-            if (Settings.ReverseLeftSaber)
-            {
-                Settings.ControllerCount = ControllerCountEnum.Two;
-                Settings.ReverseLeftSaber = false;
-            }
-            if (Settings.ControllerCount >= ControllerCountEnum.Two)
-            {
-                Settings.ControllerCount = ControllerCountEnum.Two;
-            }
             this.settings = Settings;
         }
 

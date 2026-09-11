@@ -39,12 +39,13 @@ namespace AlternativePlay
             // Do nothing if we aren't playing Flail
             if (this.configuration.Current.PlayMode != PlayMode.BeatFlail) { return; }
 
-            // Create the GameObjects for the flails
-            // ReverseLeftSaber / ReverseRightSaber are reused as "hide chain" flags for Flail.
+            // Create the GameObjects for the flails. Chain visibility is stored in
+            // dedicated Flail settings.
             if (this.configuration.Current.LeftFlailMode == BeatFlailMode.Flail) 
             {
                 this.leftPhysicsFlail = this.CreatePhysicsChain("Left", this.configuration.Current.LeftFlailLength / 100.0f);
-                int leftMeshCount = this.configuration.Current.ReverseLeftSaber ? 1 : this.leftPhysicsFlail.Count;
+                bool showLeftChain = this.configuration.Current.ShowLeftFlailChain ?? true;
+                int leftMeshCount = showLeftChain ? this.leftPhysicsFlail.Count : 1;
                 this.leftLinkMeshes = Utilities.CreateLinkMeshes(this.assetLoaderBehavior, leftMeshCount, this.configuration.Current.LeftFlailLength / 100.0f);
                 this.leftHandleMesh = this.CreateFlailHandle("LeftHandle", this.configuration.Current.LeftHandleLength / 100.0f);
             }
@@ -52,7 +53,8 @@ namespace AlternativePlay
             if (this.configuration.Current.RightFlailMode == BeatFlailMode.Flail)
             {
                 this.rightPhysicsFlail = this.CreatePhysicsChain("Right", this.configuration.Current.RightFlailLength / 100.0f);
-                int rightMeshCount = this.configuration.Current.ReverseRightSaber ? 1 : this.rightPhysicsFlail.Count;
+                bool showRightChain = this.configuration.Current.ShowRightFlailChain ?? true;
+                int rightMeshCount = showRightChain ? this.rightPhysicsFlail.Count : 1;
                 this.rightLinkMeshes = Utilities.CreateLinkMeshes(this.assetLoaderBehavior, rightMeshCount, this.configuration.Current.RightFlailLength / 100.0f);
                 this.rightHandleMesh = this.CreateFlailHandle("RightHandle", this.configuration.Current.RightHandleLength / 100.0f);
             }
