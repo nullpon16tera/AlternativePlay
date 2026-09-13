@@ -61,7 +61,7 @@ namespace AlternativePlay
         /// then it creates the head chain link with no configurable joints.  These links will have
         /// other links attaching to it instead.
         /// </summary>
-        public static GameObject CreateLink(string name, float mass, float angularDrag, bool head = false)
+        public static GameObject CreateLink(string name, float mass, float angularDamping, bool head = false)
         {
             var link = new GameObject(name);
 
@@ -71,7 +71,7 @@ namespace AlternativePlay
             chainLinkRigid.useGravity = false;
             chainLinkRigid.isKinematic = head;
             chainLinkRigid.detectCollisions = false;
-            chainLinkRigid.angularDrag = angularDrag;
+            chainLinkRigid.angularDamping = angularDamping;
 
             if (!head)
             {
@@ -118,7 +118,7 @@ namespace AlternativePlay
                 var rigid = chain[i].GetComponent<Rigidbody>();
                 if (rigid != null)
                 {
-                    rigid.velocity = new Vector3();
+                    rigid.linearVelocity = new Vector3();
                     rigid.angularVelocity = new Vector3();
                 }
             }

@@ -31,7 +31,7 @@ namespace AlternativePlay
         {
             this.calibrated = false;
             this.trackedDeviceManager.LoadTrackedDeviceProperties();
-            this.saberManager = MultiplayerLocalActivePlayerGameplayManagerPatch.multiplayerSaberManager ?? FindObjectOfType<SaberManager>();
+            this.saberManager = MultiplayerLocalActivePlayerGameplayManagerPatch.multiplayerSaberManager ?? UnityEngine.Object.FindFirstObjectByType<SaberManager>();
             this.playerOrigin = GameObject.Find("LocalPlayerGameCore/Origin");
         }
 

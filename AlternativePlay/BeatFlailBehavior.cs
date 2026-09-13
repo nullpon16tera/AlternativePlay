@@ -12,7 +12,7 @@ namespace AlternativePlay
         private const float BallMass = 3.0f;
         private const float LinkMass = 1.0f;
         private const float HandleMass = 2.0f;
-        private const float AngularDrag = 2.0f;
+        private const float AngularDrag = 1.0f;
         private const int LinkCount = 3;
         private readonly Pose leftHiddenPose = new Pose(new Vector3(-1.0f, -1000.0f, 0.0f), Quaternion.Euler(90.0f, 0.0f, 0.0f));
         private readonly Pose rightHiddenPose = new Pose(new Vector3(1.0f, -1000.0f, 0.0f), Quaternion.Euler(90.0f, 0.0f, 0.0f));
