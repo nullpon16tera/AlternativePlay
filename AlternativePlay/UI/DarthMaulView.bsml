@@ -22,13 +22,13 @@
 				<horizontal pad-right="1">
 					<img preserve-aspect="true" pref-width="8" pref-height="8" source="~UseLeftControllerIcon" />
 				</horizontal>
-				<checkbox-setting text="Use Left Controller" value="UseLeftController" bind-value="true" apply-on-change="true" hover-hint="Initial holding hand in ONE mode" />
+				<checkbox-setting text="Use Left Controller" value="UseLeftController" bind-value="true" apply-on-change="true" hover-hint="ONE: select which hand to configure Reverse for, and the initial holding hand" />
 			</horizontal>
 			<horizontal>
 				<horizontal pad-right="1">
 					<img preserve-aspect="true" pref-width="8" pref-height="8" source="~ReverseDarthMaulIcon" />
 				</horizontal>
-				<checkbox-setting text="Reverse Maul Direction" value="ReverseDarthMaul" bind-value="true" apply-on-change="true" hover-hint="Invert the saber directions" />
+				<checkbox-setting text="Reverse Maul Direction" value="ReverseDarthMaul" bind-value="true" apply-on-change="true" hover-hint="ONE: Reverse for the hand selected by Use Left Controller. TWO: Reverse both sabers." />
 			</horizontal>
 			<checkbox-setting text="Use Trigger to Switch Hands" value="UseTriggerToSwitchHands" bind-value="true" apply-on-change="true" hover-hint="ONE: empty-hand trigger transfers the Maul to that hand" />
 			<checkbox-setting text="TWO / ONE Switch (TWO only)" value="AllowTwoOneSwitch" bind-value="true" apply-on-change="true" hover-hint="TWO: single trigger enters ONE on that hand; temporary ONE: both triggers return to TWO" />

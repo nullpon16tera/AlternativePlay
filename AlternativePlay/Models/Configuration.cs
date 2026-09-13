@@ -191,14 +191,6 @@ namespace AlternativePlay.Models
                         playModeSettings.ReverseRightSaber = false;
                     }
                 }
-
-                // Compatibility cleanup for the 2026-09-10 rebuild, where
-                // ReverseLeftSaber was temporarily used as a Darth Maul TWO→ONE runtime flag.
-                if (playModeSettings.PlayMode == PlayMode.DarthMaul && playModeSettings.ReverseLeftSaber)
-                {
-                    playModeSettings.ControllerCount = ControllerCountEnum.Two;
-                    playModeSettings.ReverseLeftSaber = false;
-                }
             }
         }
     }
