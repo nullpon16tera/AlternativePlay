@@ -61,7 +61,7 @@ namespace AlternativePlay
         /// then it creates the head chain link with no configurable joints.  These links will have
         /// other links attaching to it instead.
         /// </summary>
-        public static GameObject CreateLink(string name, float mass, float angularDrag, bool head = false)
+        public static GameObject CreateLink(string name, float mass, float angularDamping, bool head = false)
         {
             var link = new GameObject(name);
 
@@ -71,7 +71,7 @@ namespace AlternativePlay
             chainLinkRigid.useGravity = false;
             chainLinkRigid.isKinematic = head;
             chainLinkRigid.detectCollisions = false;
-            chainLinkRigid.angularDrag = angularDrag;
+            chainLinkRigid.angularDamping = angularDamping;
 
             if (!head)
             {
@@ -118,7 +118,7 @@ namespace AlternativePlay
                 var rigid = chain[i].GetComponent<Rigidbody>();
                 if (rigid != null)
                 {
-                    rigid.velocity = new Vector3();
+                    rigid.linearVelocity = new Vector3();
                     rigid.angularVelocity = new Vector3();
                 }
             }
@@ -143,17 +143,20 @@ namespace AlternativePlay
         /// </summary>
         public static void MoveLinkMeshes(List<GameObject> linkMeshes, List<GameObject> chain, float chainLength)
         {
-            if (chain.Count < 2) { return; } // Do not use links for chain less than 2
+            if (chain == null || linkMeshes == null || chain.Count < 2 || linkMeshes.Count == 0) { return; }
 
             // Calculate required numbers first
             int chainSegments = chain.Count - 1;
             float shortChainLength = chainLength / chainSegments * (chainSegments - 1);  // Exclude the first segment from having links
 
             float chainSegmentLength = chainLength / chainSegments;
+            if (chainSegmentLength <= 0.0f) { return; }
             float linkMeshSeparation = shortChainLength / linkMeshes.Count;
 
             for (int i = 0; i < linkMeshes.Count; i++)
             {
+                if (linkMeshes[i] == null) { continue; }
+
                 // Determine positions on the chain length of the current link mesh
                 float leftLinkMeshPosition = linkMeshSeparation * i + chainSegmentLength;
                 float rightLinkMeshPosition = leftLinkMeshPosition + linkMeshSeparation;
@@ -161,6 +164,8 @@ namespace AlternativePlay
                 // Determine the chain links to calculate position from
                 int leftChainIndex = (int)Math.Floor(leftLinkMeshPosition / chainSegmentLength);
                 int rightChainIndex = (int)Math.Ceiling(rightLinkMeshPosition / chainSegmentLength);
+                leftChainIndex = Math.Max(0, Math.Min(leftChainIndex, chain.Count - 2));
+                rightChainIndex = Math.Max(1, Math.Min(rightChainIndex, chain.Count - 1));
                 float leftFractionalPosition = (leftLinkMeshPosition - (leftChainIndex * chainSegmentLength)) / chainSegmentLength;
                 float rightFractionalPosition = (rightLinkMeshPosition - ((rightChainIndex - 1) * chainSegmentLength)) / chainSegmentLength;
 
@@ -173,9 +178,10 @@ namespace AlternativePlay
                 Quaternion linkTwist = i % 2 != 0 ? Quaternion.Euler(90.0f, 0.0f, 0.0f) : Quaternion.identity;
 
                 // Final interpolation from the left and right points
+                Quaternion rotation = Quaternion.Lerp(leftQuaternion, rightQuaternion, 0.5f) * linkTwist;
+                rotation.Normalize();
                 linkMeshes[i].transform.position = ((rightPosition - leftPosition) / 2.0f) + leftPosition;
-                linkMeshes[i].transform.rotation = Quaternion.Lerp(leftQuaternion, rightQuaternion, 0.5f) * linkTwist;
-                linkMeshes[i].transform.rotation.Normalize();
+                linkMeshes[i].transform.rotation = rotation;
             }
         }
 
@@ -193,7 +199,7 @@ namespace AlternativePlay
             float shortChainLength = chainLength / chainSegments * (chainSegments - 1);  // Exclude the first segment from having links
 
             // Calculate the number of links required with an overlap buffer
-            int count = (int)Math.Round((shortChainLength - linkMeshOverlap) / (linkMeshLength - linkMeshOverlap));
+            int count = Math.Max(0, (int)Math.Round((shortChainLength - linkMeshOverlap) / (linkMeshLength - linkMeshOverlap)));
 
             var result = new List<GameObject>();
             for (int i = 0; i < count; i++)
@@ -203,6 +209,16 @@ namespace AlternativePlay
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Scales a saber along its local Z axis (blade direction) from the original local scale.
+        /// </summary>
+        public static void ApplySaberLength(Transform saber, Vector3 originalLocalScale, float lengthScale)
+        {
+            if (saber == null) return;
+            float scale = lengthScale < 0.01f ? 0.01f : lengthScale;
+            saber.localScale = new Vector3(originalLocalScale.x, originalLocalScale.y, originalLocalScale.z * scale);
         }
     }
 }

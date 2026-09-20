@@ -11,28 +11,28 @@
              stick-scrolling="true" show-scrollbar="true">
         <horizontal>
 
-          <horizontal pref-width="20" child-expand-width="true">
+          <horizontal pref-width="34" child-expand-width="true">
             <img preserve-aspect="true" pref-width="5" pref-height="5" img-color="~SelectedColor" source="~PlayModeIcon00" />
-            <text text="~Mode" color="~SelectedColor" font-size="4" />
+            <text text="~DisplayName" hover-hint="~DisplayHint" color="~SelectedColor" font-size="3.2" pref-width="28" word-wrapping="false" overflow-mode="Ellipsis" rich-text="false" />
           </horizontal>
 
           <horizontal pref-width="12" pad-right="2" child-expand-width="true">
-            <img preserve-aspect="true" pref-width="5" pref-height="5" img-color="~SelectedColor" source="~PlayModeIcon01" />
-            <img preserve-aspect="true" pref-width="5" pref-height="5" img-color="~SelectedColor" source="~PlayModeIcon02" />
-            <img preserve-aspect="true" pref-width="5" pref-height="5" img-color="~SelectedColor" source="~PlayModeIcon03" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" img-color="~SelectedColor" source="~PlayModeIcon01" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" img-color="~SelectedColor" source="~PlayModeIcon02" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" img-color="~SelectedColor" source="~PlayModeIcon03" />
           </horizontal>
 
           <horizontal pref-width="9" pad-right="2" child-expand-width="true">
-            <img preserve-aspect="true" pref-width="5" pref-height="5" img-color="~SelectedColor" source="~TrackerIcon00" />
-            <img preserve-aspect="true" pref-width="5" pref-height="5" img-color="~SelectedColor" source="~TrackerIcon01" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" img-color="~SelectedColor" source="~TrackerIcon00" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" img-color="~SelectedColor" source="~TrackerIcon01" />
           </horizontal>
 
           <horizontal pref-width="18" child-expand-width="true">
-            <img preserve-aspect="true" pref-width="5" pref-height="5" img-color="~SelectedColor" source="~GameModifierIcon00" />
-            <img preserve-aspect="true" pref-width="5" pref-height="5" img-color="~SelectedColor" source="~GameModifierIcon01" />
-            <img preserve-aspect="true" pref-width="5" pref-height="5" img-color="~SelectedColor" source="~GameModifierIcon02" />
-            <img preserve-aspect="true" pref-width="5" pref-height="5" img-color="~SelectedColor" source="~GameModifierIcon03" />
-            <img preserve-aspect="true" pref-width="5" pref-height="5" img-color="~SelectedColor" source="~GameModifierIcon04" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" img-color="~SelectedColor" source="~GameModifierIcon00" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" img-color="~SelectedColor" source="~GameModifierIcon01" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" img-color="~SelectedColor" source="~GameModifierIcon02" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" img-color="~SelectedColor" source="~GameModifierIcon03" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" img-color="~SelectedColor" source="~GameModifierIcon04" />
           </horizontal>
 
         </horizontal>

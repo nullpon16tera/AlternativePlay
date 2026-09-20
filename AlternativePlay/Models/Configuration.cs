@@ -16,6 +16,32 @@ namespace AlternativePlay.Models
         public int SelectedIndex => this.ConfigurationData.Selected;
         public PlayModeSettings Current => this.ConfigurationData.PlayModeSettings[this.ConfigurationData.Selected];
 
+        public event Action PresetNameChanged;
+
+        public bool RenamePlayModeSetting(int index, PlayModeSettings expected, string name)
+        {
+            PlayModeSettings playModeSetting = this.GetPlayModeSetting(index);
+            if (playModeSetting == null || playModeSetting != expected)
+            {
+                return false;
+            }
+
+            string previousName = playModeSetting.PresetName;
+            playModeSetting.PresetName = PlayModeSettings.NormalizePresetName(name);
+            try
+            {
+                this.SaveConfiguration();
+            }
+            catch
+            {
+                playModeSetting.PresetName = previousName;
+                throw;
+            }
+
+            this.PresetNameChanged?.Invoke();
+            return true;
+        }
+
         /// <summary>
         /// Sets the current <see cref="PlayModeSettings"/> to use to play to <paramref name="index"/>
         /// </summary>
@@ -177,6 +203,24 @@ namespace AlternativePlay.Models
                 clamped = Math.Max(clamped, 0);
                 playModeSettings.MoveNotesBack = clamped;
 
+                playModeSettings.PresetName = PlayModeSettings.NormalizePresetName(playModeSettings.PresetName);
+
+                // Migrate one-hand Darth Maul reverse from ReverseLeftSaber / ReverseRightSaber
+                // into dedicated per-hand fields. ReverseLeftSaber is left for Beat Saber.
+                if (playModeSettings.PlayMode == PlayMode.DarthMaul)
+                {
+                    if (!playModeSettings.ReverseMaulDirectionOneLeft.HasValue)
+                    {
+                        playModeSettings.ReverseMaulDirectionOneLeft = playModeSettings.ReverseLeftSaber;
+                        playModeSettings.ReverseLeftSaber = false;
+                    }
+                    if (!playModeSettings.ReverseMaulDirectionOneRight.HasValue)
+                    {
+                        playModeSettings.ReverseMaulDirectionOneRight = playModeSettings.ReverseRightSaber;
+                        playModeSettings.ReverseRightSaber = false;
+                    }
+                }
+
                 // Migrate 2026-09-10 rebuild-era Flail visibility flags into dedicated fields.
                 if (playModeSettings.PlayMode == PlayMode.BeatFlail)
                 {
@@ -190,14 +234,6 @@ namespace AlternativePlay.Models
                         playModeSettings.ShowRightFlailChain = !playModeSettings.ReverseRightSaber;
                         playModeSettings.ReverseRightSaber = false;
                     }
-                }
-
-                // Compatibility cleanup for the 2026-09-10 rebuild, where
-                // ReverseLeftSaber was temporarily used as a Darth Maul TWO→ONE runtime flag.
-                if (playModeSettings.PlayMode == PlayMode.DarthMaul && playModeSettings.ReverseLeftSaber)
-                {
-                    playModeSettings.ControllerCount = ControllerCountEnum.Two;
-                    playModeSettings.ReverseLeftSaber = false;
                 }
             }
         }

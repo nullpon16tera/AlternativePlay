@@ -18,8 +18,8 @@ namespace AlternativePlay
         public bool Split { get; private set; }
 
         // TWO→ONE is a gameplay-only state. It must never be stored in Configuration.
-        private bool temporaryOneFromTwo;
-        private bool temporaryOneUseLeft;
+        internal bool temporaryOneFromTwo;
+        internal bool temporaryOneUseLeft;
 
         private void Start()
         {
@@ -204,12 +204,13 @@ namespace AlternativePlay
 
             // TWO-derived ONE uses a fixed hand-based color mapping:
             // Right hand = front RED / rear BLUE; Left hand = front BLUE / rear RED.
-            // Formal ONE keeps the configured Reverse Maul Direction behavior.
+            // Formal ONE uses a Reverse setting stored per holding hand.
             Pose leftSaberPose;
             Pose rightSaberPose;
+            bool reverseForHand = this.configuration.Current.GetOneMaulReverse(useLeft);
             bool useRotatedAsLeft = temporaryFromTwo
                 ? useLeft
-                : (useLeft == this.configuration.Current.ReverseMaulDirection);
+                : (useLeft == reverseForHand);
 
             if (useRotatedAsLeft)
             {

@@ -21,6 +21,13 @@ namespace AlternativePlay.HarmonyPatches
                 return;
             }
 
+            // ONE and TWO-derived ONE: both saber colors vibrate only the holding hand.
+            if (DarthMaulBehavior.temporaryOneFromTwo)
+            {
+                node = DarthMaulBehavior.temporaryOneUseLeft ? XRNode.LeftHand : XRNode.RightHand;
+                return;
+            }
+
             if (Configuration.Current.ControllerCount == ControllerCountEnum.One)
             {
                 if (!Configuration.Current.UseLeft && node == XRNode.LeftHand)
