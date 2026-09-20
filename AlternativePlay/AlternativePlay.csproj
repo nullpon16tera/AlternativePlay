@@ -167,6 +167,7 @@
     <Compile Include="TwinSaberMarker.cs" />
     <Compile Include="TwinCutContext.cs" />
     <Compile Include="TwinNalulunaVisual.cs" />
+    <Compile Include="TwinReeSaberVisual.cs" />
     <Compile Include="DualNunchakuBehavior.cs" />
     <Compile Include="DualNunchakuAppearance.cs" />
     <Compile Include="DualNunchakuPhysicalSaber.cs" />
