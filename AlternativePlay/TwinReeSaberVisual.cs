@@ -18,6 +18,7 @@ namespace AlternativePlay
         private static Type controllerType;
         private static MethodInfo instantiateMethod;
         private static PropertyInfo configProperty;
+        private static PropertyInfo controllerRootProperty;
         private static bool resolved;
         private static bool resolveFailed;
 
@@ -104,6 +105,7 @@ namespace AlternativePlay
                 if (clone != null)
                 {
                     this.clones.Add(clone);
+                    TwinReeSaberPoseLock.Attach(clone, controllerRootProperty);
                 }
             }
 
@@ -200,6 +202,7 @@ namespace AlternativePlay
 
             controllerType = assembly.GetType("ReeSabers.ReeSaberController");
             configProperty = controllerType?.GetProperty("Config", BindingFlags.Instance | BindingFlags.Public);
+            controllerRootProperty = controllerType?.GetProperty("ControllerRoot", BindingFlags.Instance | BindingFlags.Public);
             if (controllerType != null)
             {
                 foreach (MethodInfo method in controllerType.GetMethods(BindingFlags.Public | BindingFlags.Static))
@@ -228,6 +231,45 @@ namespace AlternativePlay
             }
 
             return true;
+        }
+    }
+
+    /// <summary>
+    /// ReeSaber LateUpdate drives ControllerRoot from the VR controller of the
+    /// clone's SaberType. Twin extras are the opposite color, so that pose is
+    /// the other hand. Pin ControllerRoot to the extra saber after ReeSaber.
+    /// </summary>
+    [DefaultExecutionOrder(32767)]
+    internal sealed class TwinReeSaberPoseLock : MonoBehaviour
+    {
+        private Transform controllerRoot;
+
+        internal static void Attach(Component controller, PropertyInfo controllerRootProperty)
+        {
+            if (controller == null)
+            {
+                return;
+            }
+
+            TwinReeSaberPoseLock poseLock = controller.gameObject.GetComponent<TwinReeSaberPoseLock>();
+            if (poseLock == null)
+            {
+                poseLock = controller.gameObject.AddComponent<TwinReeSaberPoseLock>();
+            }
+
+            poseLock.controllerRoot = controllerRootProperty?.GetValue(controller, null) as Transform;
+            poseLock.enabled = poseLock.controllerRoot != null;
+        }
+
+        private void LateUpdate()
+        {
+            Transform saber = this.transform.parent;
+            if (this.controllerRoot == null || saber == null)
+            {
+                return;
+            }
+
+            this.controllerRoot.SetPositionAndRotation(saber.position, saber.rotation);
         }
     }
 }
