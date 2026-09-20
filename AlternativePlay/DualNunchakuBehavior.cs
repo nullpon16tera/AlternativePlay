@@ -52,7 +52,7 @@ namespace AlternativePlay
                     && this.sabers != null
                     && this.sabers.isActiveAndEnabled
                     && (this.pause == null || !this.pause.isPaused)
-                    && this.audioTime.state == IAudioTimeSource.State.Playing;
+                    && this.audioTime.state == AudioTimeSyncController.State.Playing;
             }
         }
 

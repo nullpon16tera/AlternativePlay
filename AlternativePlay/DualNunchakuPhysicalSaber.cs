@@ -15,10 +15,10 @@ namespace AlternativePlay
         private static readonly FieldInfo Type = AccessTools.Field(typeof(Saber), "_saberType");
         private static readonly FieldInfo TypeValue = AccessTools.Field(typeof(SaberTypeObject), "_saberType");
         private static readonly FieldInfo ModelPrefab = AccessTools.Field(typeof(SaberModelContainer), "_saberModelControllerPrefab");
-        private static readonly FieldInfo TimeHelperField = AccessTools.Field(typeof(Saber), "_timeHelper");
 
         private readonly GameObject root;
         private readonly TwinNalulunaVisual visual;
+        private readonly TwinReeSaberVisual reeVisual;
         private readonly SaberModelController model;
         private readonly Transform modelAnchor;
         private readonly Transform top;
@@ -59,10 +59,6 @@ namespace AlternativePlay
                 TypeValue.SetValue(typeObject, template.saberType);
                 this.Saber = this.root.AddComponent<Saber>();
                 container.Inject(this.Saber);
-                if (TimeHelperField.GetValue(this.Saber) == null)
-                {
-                    TimeHelperField.SetValue(this.Saber, TimeHelperField.GetValue(template));
-                }
                 Type.SetValue(this.Saber, typeObject);
                 Transform hilt = Child(this.root.transform, "Hilt");
                 Handle.SetValue(this.Saber, hilt);
@@ -92,6 +88,7 @@ namespace AlternativePlay
                 this.trailTint = container.TryResolve<SaberModelContainer.InitData>()?.trailTintColor ?? Color.white;
                 this.model.Init(modelTransform, this.Saber, this.trailTint);
                 this.visual = new TwinNalulunaVisual(this.Saber, manager, this.model.gameObject);
+                this.reeVisual = new TwinReeSaberVisual(this.Saber, manager, this.model.gameObject);
             }
             catch
             {
@@ -130,11 +127,14 @@ namespace AlternativePlay
             {
                 this.modelAnchor.localScale = new Vector3(this.originalModelScale.x, this.originalModelScale.y, this.originalModelScale.z * scale);
             }
+
+            this.reeVisual?.ApplyLength(scale);
         }
 
         internal void SampleAndCut(NoteCutter cutter)
         {
             this.visual.Synchronize();
+            this.reeVisual.Synchronize();
             this.Saber.ManualUpdate();
             if (!this.sampled)
             {
@@ -149,6 +149,7 @@ namespace AlternativePlay
         public void Dispose()
         {
             this.visual?.Dispose();
+            this.reeVisual?.Dispose();
             if (this.root != null)
             {
                 this.root.SetActive(false);

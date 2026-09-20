@@ -32,7 +32,7 @@ namespace AlternativePlay
 
         private const float NunchakuMass = 3.0f;
         private const float LinkMass = 1.0f;
-        private const float AngularDrag = 1.0f;
+        private const float AngularDrag = 2.0f;
         private const int LinkCount = 3;
 
         private List<GameObject> physicsChain;

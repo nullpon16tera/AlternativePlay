@@ -205,19 +205,24 @@ namespace AlternativePlay.Models
 
                 playModeSettings.PresetName = PlayModeSettings.NormalizePresetName(playModeSettings.PresetName);
 
-                // Migrate one-hand Darth Maul reverse from ReverseLeftSaber / ReverseRightSaber
-                // into dedicated per-hand fields. ReverseLeftSaber is left for Beat Saber.
                 if (playModeSettings.PlayMode == PlayMode.DarthMaul)
                 {
+                    // Compatibility cleanup for the 2026-09-10 rebuild, where
+                    // ReverseLeftSaber was temporarily used as a Darth Maul TWO→ONE runtime flag.
+                    if (playModeSettings.ReverseLeftSaber)
+                    {
+                        playModeSettings.ControllerCount = ControllerCountEnum.Two;
+                        playModeSettings.ReverseLeftSaber = false;
+                    }
+
+                    // ONE reverse defaults from the existing Reverse Maul Direction.
                     if (!playModeSettings.ReverseMaulDirectionOneLeft.HasValue)
                     {
-                        playModeSettings.ReverseMaulDirectionOneLeft = playModeSettings.ReverseLeftSaber;
-                        playModeSettings.ReverseLeftSaber = false;
+                        playModeSettings.ReverseMaulDirectionOneLeft = playModeSettings.ReverseMaulDirection;
                     }
                     if (!playModeSettings.ReverseMaulDirectionOneRight.HasValue)
                     {
-                        playModeSettings.ReverseMaulDirectionOneRight = playModeSettings.ReverseRightSaber;
-                        playModeSettings.ReverseRightSaber = false;
+                        playModeSettings.ReverseMaulDirectionOneRight = playModeSettings.ReverseMaulDirection;
                     }
                 }
 

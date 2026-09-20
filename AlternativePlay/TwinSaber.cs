@@ -16,8 +16,6 @@ namespace AlternativePlay
         private static readonly FieldInfo TypeValueField = RequireField(typeof(SaberTypeObject), "_saberType");
         private static readonly FieldInfo ModelPrefabField = RequireField(typeof(SaberModelContainer), "_saberModelControllerPrefab");
 
-        private static readonly FieldInfo TimeHelperField = RequireField(typeof(Saber), "_timeHelper");
-
         private readonly Transform sourceTop;
         private readonly Transform sourceBottom;
         private readonly Transform sourceHandle;
@@ -27,6 +25,7 @@ namespace AlternativePlay
         private readonly Transform modelAnchor;
         private readonly GameObject root;
         private readonly TwinNalulunaVisual customVisual;
+        private readonly TwinReeSaberVisual reeVisual;
         private bool sampled;
 
         public Saber Source { get; }
@@ -64,10 +63,6 @@ namespace AlternativePlay
                 TypeValueField.SetValue(typeObject, Opposite(source.saberType));
                 this.Saber = this.root.AddComponent<Saber>();
                 container.Inject(this.Saber);
-                if (TimeHelperField.GetValue(this.Saber) == null)
-                {
-                    TimeHelperField.SetValue(this.Saber, TimeHelperField.GetValue(source));
-                }
                 this.top = Child(this.root.transform, "BladeTop");
                 this.bottom = Child(this.root.transform, "BladeBottom");
                 Transform handle = Child(this.root.transform, "Hilt");
@@ -81,7 +76,9 @@ namespace AlternativePlay
                 SaberModelContainer.InitData initData = container.TryResolve<SaberModelContainer.InitData>();
                 model.Init(this.modelAnchor, this.Saber, initData?.trailTintColor ?? Color.white);
                 this.root.SetActive(true);
-                this.customVisual = new TwinNalulunaVisual(this.Saber, container.TryResolve<SaberManager>(), model.gameObject);
+                SaberManager saberManager = container.TryResolve<SaberManager>();
+                this.customVisual = new TwinNalulunaVisual(this.Saber, saberManager, model.gameObject);
+                this.reeVisual = new TwinReeSaberVisual(this.Saber, saberManager, model.gameObject);
             }
             catch
             {
@@ -142,6 +139,7 @@ namespace AlternativePlay
         {
             this.SynchronizeTransform();
             this.customVisual.Synchronize();
+            this.reeVisual.Synchronize();
             this.Saber.ManualUpdate();
             if (!this.sampled)
             {
@@ -164,6 +162,7 @@ namespace AlternativePlay
         public void Dispose()
         {
             this.customVisual?.Dispose();
+            this.reeVisual?.Dispose();
             if (this.root != null)
             {
                 this.root.SetActive(false);

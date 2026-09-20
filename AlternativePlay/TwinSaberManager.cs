@@ -75,7 +75,7 @@ namespace AlternativePlay
                 && this.saberManager != null
                 && this.saberManager.isActiveAndEnabled
                 && (this.gamePause == null || !this.gamePause.isPaused)
-                && this.audioTime.state == IAudioTimeSource.State.Playing)
+                && this.audioTime.state == AudioTimeSyncController.State.Playing)
             {
                 try
                 {
