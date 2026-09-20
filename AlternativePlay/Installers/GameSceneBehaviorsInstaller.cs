@@ -31,6 +31,19 @@ namespace AlternativePlay.Installers
             var gameModifiersBehavior = this.Container.InstantiateComponentOnNewGameObject<GameModifiersBehavior>();
             this.Container.Bind<GameModifiersBehavior>().FromInstance(gameModifiersBehavior).AsSingle();
 
+            var configuration = this.Container.Resolve<Models.Configuration>();
+            if (configuration.Current.TwinDarthMaul)
+            {
+                var twinSaberManager = this.Container.InstantiateComponentOnNewGameObject<TwinSaberManager>();
+                this.Container.Bind<TwinSaberManager>().FromInstance(twinSaberManager).AsSingle();
+            }
+
+            if (configuration.Current.PlayMode == Models.PlayMode.Nunchaku && configuration.Current.DualNunchaku)
+            {
+                var dualNunchakuBehavior = this.Container.InstantiateComponentOnNewGameObject<DualNunchakuBehavior>();
+                this.Container.Bind<DualNunchakuBehavior>().FromInstance(dualNunchakuBehavior).AsSingle();
+            }
+
             // Manually Inject Harmony Patches
             NunchakuHapticPatch.NunchakuBehavior = nunchakuBehavior;
             DarthMaulHapticPatch.DarthMaulBehavior = darthMaulBehavior;

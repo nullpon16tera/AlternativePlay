@@ -79,7 +79,7 @@ namespace AlternativePlay.UI
             {
                 if (this.settings.ControllerCount == ControllerCountEnum.One)
                 {
-                    return this.settings.UseLeft ? this.settings.ReverseLeftSaber : this.settings.ReverseRightSaber;
+                    return this.settings.GetOneMaulReverse(this.settings.UseLeft);
                 }
 
                 return this.settings.ReverseMaulDirection;
@@ -90,11 +90,11 @@ namespace AlternativePlay.UI
                 {
                     if (this.settings.UseLeft)
                     {
-                        this.settings.ReverseLeftSaber = value;
+                        this.settings.ReverseMaulDirectionOneLeft = value;
                     }
                     else
                     {
-                        this.settings.ReverseRightSaber = value;
+                        this.settings.ReverseMaulDirectionOneRight = value;
                     }
                 }
                 else

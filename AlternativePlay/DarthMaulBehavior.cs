@@ -207,9 +207,7 @@ namespace AlternativePlay
             // Formal ONE uses a Reverse setting stored per holding hand.
             Pose leftSaberPose;
             Pose rightSaberPose;
-            bool reverseForHand = useLeft
-                ? this.configuration.Current.ReverseLeftSaber
-                : this.configuration.Current.ReverseRightSaber;
+            bool reverseForHand = this.configuration.Current.GetOneMaulReverse(useLeft);
             bool useRotatedAsLeft = temporaryFromTwo
                 ? useLeft
                 : (useLeft == reverseForHand);

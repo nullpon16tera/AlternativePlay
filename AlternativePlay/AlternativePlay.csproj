@@ -132,6 +132,14 @@
       <HintPath>$(BeatSaberDir)Beat Saber_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>$(BeatSaberDir)Beat Saber_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(BeatSaberDir)Beat Saber_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>$(BeatSaberDir)Beat Saber_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
@@ -154,11 +162,26 @@
     <Compile Include="BeatSaberBehavior.cs" />
     <Compile Include="Installers\GameSceneBehaviorsInstaller.cs" />
     <Compile Include="DarthMaulBehavior.cs" />
+    <Compile Include="TwinSaber.cs" />
+    <Compile Include="TwinSaberManager.cs" />
+    <Compile Include="TwinSaberMarker.cs" />
+    <Compile Include="TwinCutContext.cs" />
+    <Compile Include="TwinNalulunaVisual.cs" />
+    <Compile Include="DualNunchakuBehavior.cs" />
+    <Compile Include="DualNunchakuAppearance.cs" />
+    <Compile Include="DualNunchakuPhysicalSaber.cs" />
+    <Compile Include="DualNunchakuCutContext.cs" />
+    <Compile Include="DualNunchakuCutDriver.cs" />
+    <Compile Include="DualNunchakuDiagnostics.cs" />
+    <Compile Include="NunchakuInstance.cs" />
     <Compile Include="HarmonyPatches\BeatFlailNoteMoverPatch.cs" />
     <Compile Include="HarmonyPatches\GameplayCoreInstallerPatch.cs" />
     <Compile Include="HarmonyPatches\GameplaySetupViewControllerPatch.cs" />
     <Compile Include="HarmonyPatches\AlternativePlayUIInstallerPatch.cs" />
     <Compile Include="HarmonyPatches\NunchakuHapticPatch.cs" />
+    <Compile Include="HarmonyPatches\TwinSaberHapticPatch.cs" />
+    <Compile Include="HarmonyPatches\DualNunchakuCutPatch.cs" />
+    <Compile Include="HarmonyPatches\DualNunchakuHapticPatch.cs" />
     <Compile Include="Models\ConfigurationData075.cs" />
     <Compile Include="Models\ConfigurationIconSummary.cs" />
     <Compile Include="Models\OpenVRManager.cs" />

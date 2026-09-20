@@ -21,7 +21,21 @@ namespace AlternativePlay.UI
 
         private void Start()
         {
+            this.configuration.PresetNameChanged += this.OnPresetNameChanged;
             GameplaySetup.Instance.AddTab("Alternative Play", "AlternativePlay.UI.PlayModeSelectTab.bsml", this, MenuType.All);
+        }
+
+        private void OnPresetNameChanged()
+        {
+            if (this.SelectModeList != null)
+            {
+                this.UpdatePlayModeSelectList();
+            }
+        }
+
+        private void OnDestroy()
+        {
+            this.configuration.PresetNameChanged -= this.OnPresetNameChanged;
         }
 
         public void UpdatePlayModeSelectList()

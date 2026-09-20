@@ -74,7 +74,7 @@ namespace AlternativePlay.UI
             if (settings.ControllerCount == ControllerCountEnum.Two) { this.PlayModeIcons.Add(IconNames.TwoController); }
             this.PlayModeIcons.Add(settings.UseLeft ? IconNames.LeftController : IconNames.RightController);
             bool showReverse = settings.ControllerCount == ControllerCountEnum.One
-                ? (settings.ReverseLeftSaber || settings.ReverseRightSaber)
+                ? (settings.GetOneMaulReverse(true) || settings.GetOneMaulReverse(false))
                 : settings.ReverseMaulDirection;
             if (showReverse) { this.PlayModeIcons.Add(IconNames.ReverseMaulDirection); }
         }
@@ -103,6 +103,9 @@ namespace AlternativePlay.UI
         {
             this.PlayModeIcons.Add(IconNames.Nunchaku);
 
+            if (settings.DualNunchaku) this.PlayModeIcons.Add(IconNames.Nunchaku);
+            if (settings.DualNunchaku && settings.DualNunchakuOneColorLeft) this.PlayModeIcons.Add(IconNames.LeftSaber);
+            if (settings.DualNunchaku && settings.DualNunchakuOneColorRight) this.PlayModeIcons.Add(IconNames.RightSaber);
             if (settings.ReverseNunchaku) this.PlayModeIcons.Add(IconNames.ReverseNunchaku);
         }
 
@@ -119,6 +122,7 @@ namespace AlternativePlay.UI
             this.GameModifierIcons.Add(settings.NoSliders ? IconNames.NoSliders : IconNames.Empty);
             this.GameModifierIcons.Add(settings.NoArrowsRandom ? IconNames.NoArrowsRandom : IconNames.Empty);
             this.GameModifierIcons.Add(settings.TouchNotes ? IconNames.TouchNotes : IconNames.Empty);
+            if (settings.TwinDarthMaul) this.PlayModeIcons.Add(IconNames.DarthMaul);
         }
     }
 }
