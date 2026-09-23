@@ -34,7 +34,8 @@ namespace AlternativePlay
             try
             {
                 this.chain.Add(Utilities.CreateLink(hand + " Root", 3f, 1.0f, true));
-                for (int i = 0; i < 3; i++)
+                int linkCount = Utilities.IntermediateLinkCount(length);
+                for (int i = 0; i < linkCount; i++)
                 {
                     this.chain.Add(Utilities.CreateLink(hand + " Link " + i, 1f, 1.0f));
                 }
