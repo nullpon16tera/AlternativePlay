@@ -18,14 +18,14 @@
         <horizontal pad-right="1">
           <img preserve-aspect="true" pref-width="8" pref-height="8" source="~DualNunchakuOneColorLeftIcon" />
         </horizontal>
-        <checkbox-setting text="Left One Color (Red)" value="DualNunchakuOneColorLeft" bind-value="true" apply-on-change="true"
+        <checkbox-setting text="Left One Color" value="DualNunchakuOneColorLeft" bind-value="true" apply-on-change="true"
                           hover-hint="Dual only: both segments of the left nunchaku are red. Applies next song." />
       </horizontal>
       <horizontal>
         <horizontal pad-right="1">
           <img preserve-aspect="true" pref-width="8" pref-height="8" source="~DualNunchakuOneColorRightIcon" />
         </horizontal>
-        <checkbox-setting text="Right One Color (Blue)" value="DualNunchakuOneColorRight" bind-value="true" apply-on-change="true"
+        <checkbox-setting text="Right One Color" value="DualNunchakuOneColorRight" bind-value="true" apply-on-change="true"
                           hover-hint="Dual only: both segments of the right nunchaku are blue. Applies next song." />
       </horizontal>
       <horizontal>
