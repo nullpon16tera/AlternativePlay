@@ -33,7 +33,6 @@ namespace AlternativePlay
         private const float NunchakuMass = 3.0f;
         private const float LinkMass = 1.0f;
         private const float AngularDrag = 2.0f;
-        private const int LinkCount = 3;
 
         private List<GameObject> physicsChain;
         private List<GameObject> linkMeshes;
@@ -221,7 +220,7 @@ namespace AlternativePlay
             var rightHandle = Utilities.CreateLink("RightNunchaku", NunchakuMass, AngularDrag, true);
             chain.Add(rightHandle);
 
-            for (int i = 0; i < LinkCount; i++)
+            for (int i = 0; i < Utilities.IntermediateLinkCount(this.configuration.Current.NunchakuLength / 100.0f); i++)
             {
                 var link = Utilities.CreateLink("NunchakuLink" + i.ToString(), LinkMass, AngularDrag);
                 chain.Add(link);
