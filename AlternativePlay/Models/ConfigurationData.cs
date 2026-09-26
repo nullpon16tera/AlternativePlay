@@ -71,6 +71,8 @@ namespace AlternativePlay.Models
 
         // Darth Maul Options
         public bool ReverseMaulDirection { get; set; }
+        public bool? ReverseMaulDirectionOneLeft { get; set; }
+        public bool? ReverseMaulDirectionOneRight { get; set; }
         public bool UseTriggerToSeparate { get; set; }
         public int MaulDistance { get; set; } = 15;
 
@@ -151,6 +153,11 @@ namespace AlternativePlay.Models
             }
 
             return "Preset " + (index + 1);
+        }
+
+        public bool GetOneMaulReverse(bool useLeft)
+        {
+            return (useLeft ? this.ReverseMaulDirectionOneLeft : this.ReverseMaulDirectionOneRight) ?? this.ReverseMaulDirection;
         }
 
         // Convenince functions

@@ -73,7 +73,10 @@ namespace AlternativePlay.UI
             if (settings.ControllerCount == ControllerCountEnum.One) { this.PlayModeIcons.Add(IconNames.OneController); }
             if (settings.ControllerCount == ControllerCountEnum.Two) { this.PlayModeIcons.Add(IconNames.TwoController); }
             this.PlayModeIcons.Add(settings.UseLeft ? IconNames.LeftController : IconNames.RightController);
-            if (settings.ReverseMaulDirection) { this.PlayModeIcons.Add(IconNames.ReverseMaulDirection); }
+            bool showReverse = settings.ControllerCount == ControllerCountEnum.One
+                ? (settings.GetOneMaulReverse(true) || settings.GetOneMaulReverse(false))
+                : settings.ReverseMaulDirection;
+            if (showReverse) { this.PlayModeIcons.Add(IconNames.ReverseMaulDirection); }
         }
 
         private void AddBeatSpearIcons(PlayModeSettings settings)
