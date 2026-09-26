@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
+using System.Text;
 
 namespace AlternativePlay.Models
 {
@@ -51,7 +53,11 @@ namespace AlternativePlay.Models
         [NonSerialized]
         public static readonly List<string> RotationIncrementList = new List<string> { "0.1", "1", "5", "10", "30" };
 
+        public const int PresetNameMaxLength = 32;
+
         public PlayMode PlayMode { get; set; } = PlayMode.BeatSaber;
+
+        public string PresetName { get; set; }
 
         // Common Options
         public bool UseLeft { get; set; }
@@ -97,6 +103,46 @@ namespace AlternativePlay.Models
         public TrackerConfigData RightTracker { get; set; } = new TrackerConfigData();
         public string PositionIncrement { get; set; } = DefaultPositionIncrement;
         public string RotationIncrement { get; set; } = DefaultRotationIncrement;
+
+        public static string NormalizePresetName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return null;
+            }
+
+            var sanitized = new StringBuilder(name.Length);
+            foreach (char c in name)
+            {
+                sanitized.Append((char.IsControl(c) || c == '\u2028' || c == '\u2029') ? ' ' : c);
+            }
+
+            var limited = new StringBuilder();
+            TextElementEnumerator enumerator = StringInfo.GetTextElementEnumerator(sanitized.ToString().Trim());
+            for (int i = 0; i < PresetNameMaxLength; i++)
+            {
+                if (!enumerator.MoveNext())
+                {
+                    break;
+                }
+
+                limited.Append(enumerator.GetTextElement());
+            }
+
+            string text = limited.ToString().Trim();
+            return text.Length == 0 ? null : text;
+        }
+
+        public string GetPresetDisplayName(int index)
+        {
+            string text = NormalizePresetName(this.PresetName);
+            if (text != null)
+            {
+                return (index + 1) + ": " + text;
+            }
+
+            return "Preset " + (index + 1);
+        }
 
         // Convenince functions
         public static float GetIncrement(string increment)

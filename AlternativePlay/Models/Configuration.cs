@@ -16,6 +16,32 @@ namespace AlternativePlay.Models
         public int SelectedIndex => this.ConfigurationData.Selected;
         public PlayModeSettings Current => this.ConfigurationData.PlayModeSettings[this.ConfigurationData.Selected];
 
+        public event Action PresetNameChanged;
+
+        public bool RenamePlayModeSetting(int index, PlayModeSettings expected, string name)
+        {
+            PlayModeSettings playModeSetting = this.GetPlayModeSetting(index);
+            if (playModeSetting == null || playModeSetting != expected)
+            {
+                return false;
+            }
+
+            string previousName = playModeSetting.PresetName;
+            playModeSetting.PresetName = PlayModeSettings.NormalizePresetName(name);
+            try
+            {
+                this.SaveConfiguration();
+            }
+            catch
+            {
+                playModeSetting.PresetName = previousName;
+                throw;
+            }
+
+            this.PresetNameChanged?.Invoke();
+            return true;
+        }
+
         /// <summary>
         /// Sets the current <see cref="PlayModeSettings"/> to use to play to <paramref name="index"/>
         /// </summary>
@@ -176,6 +202,8 @@ namespace AlternativePlay.Models
                 int clamped = Math.Min(playModeSettings.MoveNotesBack, 150);
                 clamped = Math.Max(clamped, 0);
                 playModeSettings.MoveNotesBack = clamped;
+
+                playModeSettings.PresetName = PlayModeSettings.NormalizePresetName(playModeSettings.PresetName);
             }
         }
     }

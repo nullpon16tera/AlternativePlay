@@ -13,35 +13,38 @@
       <custom-list id="SelectModeList" visible-cells="7" cell-size="8" list-width="110" select-cell="OnModeClicked"
 						 stick-scrolling="true" show-scrollbar="true">
         <horizontal>
-          <horizontal pref-width="20" child-expand-width="true">
+          <horizontal pref-width="34" child-expand-width="true">
             <img preserve-aspect="true" pref-width="5" pref-height="5" source="~PlayModeIcon00" />
-            <text text="~Mode" font-size="4" />
+            <text text="~DisplayName" hover-hint="~DisplayHint" font-size="3.2" pref-width="28" word-wrapping="false" overflow-mode="Ellipsis" rich-text="false" />
           </horizontal>
 
           <horizontal pref-width="12" pad-right="2" child-expand-width="true">
-            <img preserve-aspect="true" pref-width="5" pref-height="5" source="~PlayModeIcon01" />
-            <img preserve-aspect="true" pref-width="5" pref-height="5" source="~PlayModeIcon02" />
-            <img preserve-aspect="true" pref-width="5" pref-height="5" source="~PlayModeIcon03" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" source="~PlayModeIcon01" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" source="~PlayModeIcon02" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" source="~PlayModeIcon03" />
           </horizontal>
 
           <horizontal pref-width="9" pad-right="2" child-expand-width="true">
-            <img preserve-aspect="true" pref-width="5" pref-height="5" source="~TrackerIcon00" />
-            <img preserve-aspect="true" pref-width="5" pref-height="5" source="~TrackerIcon01" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" source="~TrackerIcon00" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" source="~TrackerIcon01" />
           </horizontal>
 
           <horizontal pref-width="18" child-expand-width="true">
-            <img preserve-aspect="true" pref-width="5" pref-height="5" source="~GameModifierIcon00" />
-            <img preserve-aspect="true" pref-width="5" pref-height="5" source="~GameModifierIcon01" />
-            <img preserve-aspect="true" pref-width="5" pref-height="5" source="~GameModifierIcon02" />
-            <img preserve-aspect="true" pref-width="5" pref-height="5" source="~GameModifierIcon03" />
-            <img preserve-aspect="true" pref-width="5" pref-height="5" source="~GameModifierIcon04" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" source="~GameModifierIcon00" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" source="~GameModifierIcon01" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" source="~GameModifierIcon02" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" source="~GameModifierIcon03" />
+            <img preserve-aspect="true" pref-width="3.5" pref-height="3.5" source="~GameModifierIcon04" />
           </horizontal>
 
-          <button pad-left="3" text="Delete" pref-width="24" pref-height="8" on-click="OnDeleteClicked" hover-hint="Delete this configuration" />
+          <button text="Rename" pref-width="16" pref-height="8" on-click="OnRenameClicked" hover-hint="Name this preset (32 characters). ENTER saves; CLEAR removes its name; PASTE accepts Japanese/Unicode from the clipboard." />
+          <button text="Delete" pref-width="16" pref-height="8" on-click="OnDeleteClicked" hover-hint="Delete this configuration" />
 
         </horizontal>
       </custom-list>
     </vertical>
+
+    <modal-keyboard id="RenameKeyboard" clear-on-open="false" on-enter="OnRenameConfirmed" click-off-closes="true" />
 
     <!-- Delete Modal -->
     <modal id="DeleteModal" size-delta-x="100" size-delta-y="50" click-off-closes="true" >

@@ -3,7 +3,10 @@ using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.ViewControllers;
 using HMUI;
+using System;
+using System.Globalization;
 using System.Linq;
+using UnityEngine;
 using Zenject;
 
 namespace AlternativePlay.UI
@@ -19,6 +22,9 @@ namespace AlternativePlay.UI
 #pragma warning restore CS0649
 
         private int deleteIndex; // Caches the index to be deleted for after the Delete Modal is done
+        private int renameIndex;
+        private PlayModeSettings renameSettings;
+        private bool renameKeyboardConfigured;
 
         /// <summary>
         /// Reloads the table with the latest configuration data
@@ -28,7 +34,7 @@ namespace AlternativePlay.UI
         {
             // Convert configuration settings to the class used for the list
             var list = this.configuration.ConfigurationData.PlayModeSettings
-                .Select((settings, i) => new PlayModeSelectOption(this.configuration.ConfigurationData, i, this.ShowDeleteModal))
+                .Select((settings, i) => new PlayModeSelectOption(this.configuration.ConfigurationData, i, this.ShowDeleteModal, this.ShowRenameModal))
                 .ToList();
 
             this.SelectModeList.TableView.ClearSelection();
@@ -60,10 +66,61 @@ namespace AlternativePlay.UI
             this.DeleteModal.Show(true);
         }
 
+        private void ShowRenameModal(int index)
+        {
+            PlayModeSettings playModeSetting = this.configuration.GetPlayModeSetting(index);
+            if (playModeSetting == null)
+            {
+                return;
+            }
+
+            this.renameIndex = index;
+            this.renameSettings = playModeSetting;
+            KEYBOARD keyboard = this.RenameKeyboard.Keyboard;
+            if (!this.renameKeyboardConfigured)
+            {
+                keyboard.AddKeys("@-30,11 [PASTE]/20 [CANCEL]/20", 0.5f);
+                keyboard.SetAction("PASTE", _ =>
+                {
+                    this.RenameKeyboard.SetText(PlayModeSettings.NormalizePresetName(GUIUtility.systemCopyBuffer) ?? string.Empty);
+                });
+                keyboard.SetAction("CANCEL", _ =>
+                {
+                    this.renameSettings = null;
+                    this.RenameKeyboard.ModalView.Hide(true);
+                });
+                keyboard.SetAction("⬅", _ =>
+                {
+                    string text = keyboard.KeyboardText.text ?? string.Empty;
+                    int[] combining = StringInfo.ParseCombiningCharacters(text);
+                    this.RenameKeyboard.SetText(combining.Length == 0 ? string.Empty : text.Substring(0, combining[combining.Length - 1]));
+                });
+                keyboard.KeyboardText.richText = false;
+                this.renameKeyboardConfigured = true;
+            }
+
+            this.RenameKeyboard.ModalView.Show(true);
+            this.RenameKeyboard.SetText(PlayModeSettings.NormalizePresetName(playModeSetting.PresetName) ?? string.Empty);
+        }
+
+        [UIAction("OnRenameConfirmed")]
+        public void OnRenameConfirmed(string name)
+        {
+            if (this.configuration.RenamePlayModeSetting(this.renameIndex, this.renameSettings, name))
+            {
+                this.RefreshConfigurations(this.renameIndex);
+            }
+
+            this.renameSettings = null;
+        }
+
         [UIComponent(nameof(SelectModeList))]
         public readonly CustomCellListTableData SelectModeList;
 
-        [UIAction(nameof(this.OnModeClicked))]
+        [UIComponent("RenameKeyboard")]
+        public ModalKeyboard RenameKeyboard;
+
+        [UIAction(nameof(OnModeClicked))]
         public void OnModeClicked(TableView _, PlayModeSelectOption selected)
         {
             var playModeSettings = this.configuration.GetPlayModeSetting(selected.Index);
@@ -76,7 +133,7 @@ namespace AlternativePlay.UI
             this.mainFlowCoordinator.ShowPlayModeSelect(playModeSettings, selected.Index);
         }
 
-        [UIAction(nameof(this.OnAddNewConfiguration))]
+        [UIAction(nameof(OnAddNewConfiguration))]
         public void OnAddNewConfiguration()
         {
             // Add a new setting to the bottom of the list
