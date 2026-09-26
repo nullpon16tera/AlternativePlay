@@ -155,13 +155,24 @@ namespace AlternativePlay.UI
             }
         }
 
-        [UIValue(nameof(MoveNotesBack))]
-        private int MoveNotesBack
+        [UIValue(nameof(ShowLeftFlailChain))]
+        private bool ShowLeftFlailChain
         {
-            get => this.settings.MoveNotesBack;
+            get => this.settings.ShowLeftFlailChain ?? true;
             set
             {
-                this.settings.MoveNotesBack = value;
+                this.settings.ShowLeftFlailChain = value;
+                this.configuration.SaveConfiguration();
+            }
+        }
+
+        [UIValue(nameof(ShowRightFlailChain))]
+        private bool ShowRightFlailChain
+        {
+            get => this.settings.ShowRightFlailChain ?? true;
+            set
+            {
+                this.settings.ShowRightFlailChain = value;
                 this.configuration.SaveConfiguration();
             }
         }
@@ -187,7 +198,8 @@ namespace AlternativePlay.UI
             this.NotifyPropertyChanged(nameof(this.LeftFlailLength));
             this.NotifyPropertyChanged(nameof(this.RightFlailLength));
             this.NotifyPropertyChanged(nameof(this.Gravity));
-            this.NotifyPropertyChanged(nameof(this.MoveNotesBack));
+            this.NotifyPropertyChanged(nameof(this.ShowLeftFlailChain));
+            this.NotifyPropertyChanged(nameof(this.ShowRightFlailChain));
         }
 
         #region Tracker Selection Members

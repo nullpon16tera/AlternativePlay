@@ -1,4 +1,5 @@
 ﻿using AlternativePlay.Models;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,9 @@ namespace AlternativePlay
         private const float LinkMass = 1.0f;
         private const float HandleMass = 2.0f;
         private const float AngularDrag = 2.0f;
-        private const int LinkCount = 3;
+        private const float PhysicsSegmentLength = 0.10f;
+        private const int MinIntermediateLinks = 1;
+        private const int MaxIntermediateLinks = 12;
         private readonly Pose leftHiddenPose = new Pose(new Vector3(-1.0f, -1000.0f, 0.0f), Quaternion.Euler(90.0f, 0.0f, 0.0f));
         private readonly Pose rightHiddenPose = new Pose(new Vector3(1.0f, -1000.0f, 0.0f), Quaternion.Euler(90.0f, 0.0f, 0.0f));
 
@@ -39,18 +42,21 @@ namespace AlternativePlay
             // Do nothing if we aren't playing Flail
             if (this.configuration.Current.PlayMode != PlayMode.BeatFlail) { return; }
 
-            // Create the GameObjects for the flails
+            // Create the GameObjects for the flails. Chain visibility is stored in
+            // dedicated Flail settings.
             if (this.configuration.Current.LeftFlailMode == BeatFlailMode.Flail) 
             {
                 this.leftPhysicsFlail = this.CreatePhysicsChain("Left", this.configuration.Current.LeftFlailLength / 100.0f);
-                this.leftLinkMeshes = Utilities.CreateLinkMeshes(this.assetLoaderBehavior, this.leftPhysicsFlail.Count, this.configuration.Current.LeftFlailLength / 100.0f);
+                bool showLeftChain = this.configuration.Current.ShowLeftFlailChain ?? true;
+                this.leftLinkMeshes = this.CreateFlailLinkMeshes(showLeftChain, this.configuration.Current.LeftFlailLength / 100.0f);
                 this.leftHandleMesh = this.CreateFlailHandle("LeftHandle", this.configuration.Current.LeftHandleLength / 100.0f);
             }
 
             if (this.configuration.Current.RightFlailMode == BeatFlailMode.Flail)
             {
                 this.rightPhysicsFlail = this.CreatePhysicsChain("Right", this.configuration.Current.RightFlailLength / 100.0f);
-                this.rightLinkMeshes = Utilities.CreateLinkMeshes(this.assetLoaderBehavior, this.rightPhysicsFlail.Count, this.configuration.Current.RightFlailLength / 100.0f);
+                bool showRightChain = this.configuration.Current.ShowRightFlailChain ?? true;
+                this.rightLinkMeshes = this.CreateFlailLinkMeshes(showRightChain, this.configuration.Current.RightFlailLength / 100.0f);
                 this.rightHandleMesh = this.CreateFlailHandle("RightHandle", this.configuration.Current.RightHandleLength / 100.0f);
             }
 
@@ -137,15 +143,10 @@ namespace AlternativePlay
                     Pose leftLastLinkPose = new Pose(lastLeftLink.transform.position / 10.0f, lastLeftLink.transform.rotation * Quaternion.Euler(0.0f, -90.0f, 180.0f));
                     this.saberDeviceManager.SetLeftSaberPose(leftLastLinkPose);
 
-                    // Move all links into place
-                    Utilities.MoveLinkMeshes(this.leftLinkMeshes, this.leftPhysicsFlail, (float)this.configuration.Current.LeftFlailLength / 100f);
-
-                    // Move handle based on the original saber position
                     Pose leftSaberPose = this.saberDeviceManager.GetLeftSaberPose(this.configuration.Current.LeftTracker);
-                    float oneChainDistance = this.configuration.Current.LeftFlailLength / 100.0f / (this.leftPhysicsFlail.Count - 1);
-                    Vector3 moveHandleUp = leftSaberPose.rotation * new Vector3(0.0f, 0.0f, oneChainDistance); // Move handle forward one chain length
-                    this.leftHandleMesh.transform.position = leftSaberPose.position + moveHandleUp;
+                    this.leftHandleMesh.transform.position = leftSaberPose.position;
                     this.leftHandleMesh.transform.rotation = leftSaberPose.rotation;
+                    MoveFlailLinkMeshes(this.leftLinkMeshes, this.leftPhysicsFlail, this.leftHandleMesh.transform);
 
                    break;
 
@@ -168,15 +169,10 @@ namespace AlternativePlay
                     Pose rightLastLinkPose = new Pose(lastRightLink.transform.position / 10.0f, lastRightLink.transform.rotation * Quaternion.Euler(0.0f, -90.0f, 180.0f));
                     this.saberDeviceManager.SetRightSaberPose(rightLastLinkPose);
 
-                    // Move all links into place
-                    Utilities.MoveLinkMeshes(this.rightLinkMeshes, this.rightPhysicsFlail, this.configuration.Current.RightFlailLength / 100.0f);
-
-                    // Move handle based on the original saber position
                     Pose rightSaberPose = this.saberDeviceManager.GetRightSaberPose(this.configuration.Current.RightTracker);
-                    float oneChainDistance = this.configuration.Current.RightFlailLength / 100.0f / (this.rightPhysicsFlail.Count - 1);
-                    Vector3 moveHandleUp = rightSaberPose.rotation * new Vector3(0.0f, 0.0f, oneChainDistance); // Move handle forward one chain length
-                    this.rightHandleMesh.transform.position = rightSaberPose.position + moveHandleUp;
+                    this.rightHandleMesh.transform.position = rightSaberPose.position;
                     this.rightHandleMesh.transform.rotation = rightSaberPose.rotation;
+                    MoveFlailLinkMeshes(this.rightLinkMeshes, this.rightPhysicsFlail, this.rightHandleMesh.transform);
                     break;
 
                 case BeatFlailMode.Sword:
@@ -221,7 +217,8 @@ namespace AlternativePlay
             var handle = Utilities.CreateLink(prefix + "FlailHandle", HandleMass, AngularDrag, true);
             chain.Add(handle);
 
-            for (int i = 0; i < LinkCount; i++)
+            int linkCount = IntermediateLinkCount(length);
+            for (int i = 0; i < linkCount; i++)
             {
                 var link = Utilities.CreateLink(prefix + "FlailLink" + i.ToString(), LinkMass, AngularDrag);
                 chain.Add(link);
@@ -232,6 +229,100 @@ namespace AlternativePlay
 
             Utilities.ConnectChain(chain, length);
             return chain;
+        }
+
+        /// <summary>
+        /// Keep physics segments near one visual link long, so lengthening the chain
+        /// adds links instead of stretching the first segment away from the handle.
+        /// </summary>
+        private static int IntermediateLinkCount(float length)
+        {
+            int segments = Mathf.Max(2, Mathf.RoundToInt(length / PhysicsSegmentLength));
+            return Mathf.Clamp(segments - 1, MinIntermediateLinks, MaxIntermediateLinks);
+        }
+
+        /// <summary>
+        /// Visual chain links covering the full handle-to-ball length. The nunchaku
+        /// helper skips the first physics segment, which leaves a growing gap at the flail handle.
+        /// </summary>
+        private List<GameObject> CreateFlailLinkMeshes(bool showChain, float length)
+        {
+            var meshes = new List<GameObject>();
+            if (!showChain)
+            {
+                return meshes;
+            }
+
+            const float linkMeshOverlap = 0.03f;
+            const float linkMeshStep = 0.07f;
+            int count = Math.Max(2, (int)Math.Round((length - linkMeshOverlap) / linkMeshStep));
+            for (int i = 0; i < count; i++)
+            {
+                meshes.Add(GameObject.Instantiate(this.assetLoaderBehavior.LinkPrefab));
+            }
+
+            return meshes;
+        }
+
+        /// <summary>
+        /// Places visual links along the physics chain. The first point stays on the handle
+        /// so there is no root gap as length changes; each link faces along the chain.
+        /// </summary>
+        private static void MoveFlailLinkMeshes(List<GameObject> meshes, List<GameObject> chain, Transform handle)
+        {
+            if (meshes == null || chain == null || handle == null || meshes.Count < 2 || chain.Count < 2)
+            {
+                return;
+            }
+
+            int last = meshes.Count - 1;
+            float step = 1.0f / last;
+            Vector3 up = handle.up;
+            for (int i = 0; i < meshes.Count; i++)
+            {
+                if (meshes[i] == null)
+                {
+                    continue;
+                }
+
+                float t = i * step;
+                Vector3 position = FlailChainPoint(chain, handle, t);
+                Vector3 previous = FlailChainPoint(chain, handle, Math.Max(0.0f, t - step));
+                Vector3 next = FlailChainPoint(chain, handle, Math.Min(1.0f, t + step));
+                Quaternion twist = i % 2 != 0 ? Quaternion.Euler(90.0f, 0.0f, 0.0f) : Quaternion.identity;
+                meshes[i].transform.position = position;
+                meshes[i].transform.rotation = FlailChainRotation(previous, next, up, twist);
+            }
+        }
+
+        private static Vector3 FlailChainPoint(List<GameObject> chain, Transform handle, float chainT)
+        {
+            float s = chainT * (chain.Count - 1);
+            int index = Math.Min((int)s, chain.Count - 2);
+            float frac = s - index;
+            Vector3 start = index == 0 ? handle.position : chain[index].transform.position / 10.0f;
+            Vector3 end = chain[index + 1].transform.position / 10.0f;
+            return start + ((end - start) * frac);
+        }
+
+        private static Quaternion FlailChainRotation(Vector3 from, Vector3 to, Vector3 up, Quaternion twist)
+        {
+            Vector3 dir = to - from;
+            if (dir.sqrMagnitude < 1E-08f)
+            {
+                return twist;
+            }
+
+            dir.Normalize();
+            Vector3 alignedUp = up.sqrMagnitude < 1E-08f ? Vector3.up : up.normalized;
+            if (Mathf.Abs(Vector3.Dot(dir, alignedUp)) > 0.95f)
+            {
+                alignedUp = Mathf.Abs(dir.y) < 0.95f ? Vector3.up : Vector3.right;
+            }
+
+            Quaternion rotation = Quaternion.LookRotation(dir, alignedUp) * Quaternion.Euler(0.0f, -90.0f, 0.0f) * twist;
+            rotation.Normalize();
+            return rotation;
         }
 
         /// <summary>
@@ -266,8 +357,13 @@ namespace AlternativePlay
 
             int segmentCount = (int)(flailTotalLength / flailSegmentLength);
 
-            // Instantiate One-Off Game Objects
+            // Instantiate parent handle. Length 0 hides the handle visuals.
             var handle = new GameObject(name);
+            if (segmentCount == 0)
+            {
+                return handle;
+            }
+
             var topCap = GameObject.Instantiate(this.assetLoaderBehavior.FlailTopCapPrefab, Vector3.zero, Quaternion.identity, handle.transform);
             var bottomCapPosition = new Vector3(0.0f, 0.0f, (flailSegmentLength * segmentCount * -1.0f) - topCapLength - bottomCapLength);
             var bottomCap = GameObject.Instantiate(this.assetLoaderBehavior.FlailBottomCapPrefab, bottomCapPosition, Quaternion.identity, handle.transform);
