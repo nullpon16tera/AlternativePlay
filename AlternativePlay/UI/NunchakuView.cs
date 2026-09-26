@@ -58,6 +58,17 @@ namespace AlternativePlay.UI
             }
         }
 
+        [UIValue(nameof(NunchakuSaberLength))]
+        private int NunchakuSaberLength
+        {
+            get => this.settings.NunchakuSaberLength;
+            set
+            {
+                this.settings.NunchakuSaberLength = value;
+                this.configuration.SaveConfiguration();
+            }
+        }
+
         [UIValue(nameof(Gravity))]
         private float Gravity
         {
@@ -83,10 +94,17 @@ namespace AlternativePlay.UI
             return $"{value} cm";
         }
 
+        [UIAction(nameof(SaberLengthFormatter))]
+        private string SaberLengthFormatter(int value)
+        {
+            return $"{value}%";
+        }
+
         private void UpdateAllValues()
         {
             this.NotifyPropertyChanged(nameof(this.ReverseNunchaku));
             this.NotifyPropertyChanged(nameof(this.NunchakuLength));
+            this.NotifyPropertyChanged(nameof(this.NunchakuSaberLength));
             this.NotifyPropertyChanged(nameof(this.Gravity));
         }
 

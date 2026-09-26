@@ -81,6 +81,7 @@ namespace AlternativePlay.Models
         // Nunchaku Options
         public bool ReverseNunchaku { get; set; }
         public int NunchakuLength { get; set; } = 50; // in centimetres
+        public int NunchakuSaberLength { get; set; } = 100; // percent of original saber length
 
         // Flail Options
         public BeatFlailMode LeftFlailMode { get; set; } = BeatFlailMode.Flail;

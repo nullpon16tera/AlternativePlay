@@ -24,6 +24,8 @@ namespace AlternativePlay
         private InputManager inputManager;
         [Inject]
         private AssetLoaderBehavior assetLoaderBehavior;
+        [Inject]
+        private SaberManager saberManager;
 #pragma warning restore CS0649
 
         public Held HeldState { get; private set; }
@@ -34,6 +36,10 @@ namespace AlternativePlay
 
         private List<GameObject> physicsChain;
         private List<GameObject> linkMeshes;
+
+        private Vector3 leftOriginalScale;
+        private Vector3 rightOriginalScale;
+        private bool capturedSaberScale;
 
         private void Start()
         {
@@ -166,10 +172,42 @@ namespace AlternativePlay
             var saberDevice = this.saberDeviceManager;
             saberDevice.SetLeftSaberPose(newLeftSaberPose);
             saberDevice.SetRightSaberPose(newRightSaberPose);
+            this.ApplySaberLength();
+        }
+
+        private void CaptureSaberScales()
+        {
+            if (this.capturedSaberScale || this.saberManager?.leftSaber == null || this.saberManager.rightSaber == null) return;
+            this.leftOriginalScale = this.saberManager.leftSaber.transform.localScale;
+            this.rightOriginalScale = this.saberManager.rightSaber.transform.localScale;
+            this.capturedSaberScale = true;
+        }
+
+        private void ApplySaberLength()
+        {
+            this.CaptureSaberScales();
+            if (!this.capturedSaberScale) return;
+            float scale = this.configuration.Current.NunchakuSaberLength / 100.0f;
+            Utilities.ApplySaberLength(this.saberManager.leftSaber.transform, this.leftOriginalScale, scale);
+            Utilities.ApplySaberLength(this.saberManager.rightSaber.transform, this.rightOriginalScale, scale);
+        }
+
+        private void RestoreSaberScales()
+        {
+            if (!this.capturedSaberScale) return;
+            if (this.saberManager?.leftSaber != null)
+            {
+                this.saberManager.leftSaber.transform.localScale = this.leftOriginalScale;
+            }
+            if (this.saberManager?.rightSaber != null)
+            {
+                this.saberManager.rightSaber.transform.localScale = this.rightOriginalScale;
+            }
         }
 
         private void OnDestroy()
         {
+            this.RestoreSaberScales();
             if (this.physicsChain != null) this.physicsChain.ForEach(o => GameObject.Destroy(o));
             if (this.linkMeshes != null) this.linkMeshes.ForEach(o => GameObject.Destroy(o));
         }
