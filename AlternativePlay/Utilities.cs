@@ -139,28 +139,42 @@ namespace AlternativePlay
         }
 
         /// <summary>
+        /// Keep physics segments near one visual link long, so lengthening the chain
+        /// adds links instead of stretching the first segment away from the handle.
+        /// </summary>
+        public static int IntermediateLinkCount(float lengthMeters)
+        {
+            const float segmentLength = 0.10f;
+            int segments = Mathf.Max(2, Mathf.RoundToInt(lengthMeters / segmentLength));
+            return Mathf.Clamp(segments - 1, 1, 12);
+        }
+
+        /// <summary>
         /// Move the link meshes to the same positions of the chain
         /// </summary>
         public static void MoveLinkMeshes(List<GameObject> linkMeshes, List<GameObject> chain, float chainLength)
         {
-            if (chain.Count < 2) { return; } // Do not use links for chain less than 2
+            if (chain == null || linkMeshes == null || chain.Count < 2 || linkMeshes.Count == 0) { return; }
 
-            // Calculate required numbers first
             int chainSegments = chain.Count - 1;
-            float shortChainLength = chainLength / chainSegments * (chainSegments - 1);  // Exclude the first segment from having links
-
             float chainSegmentLength = chainLength / chainSegments;
-            float linkMeshSeparation = shortChainLength / linkMeshes.Count;
+            if (chainSegmentLength <= 0.0f) { return; }
+            float linkMeshSeparation = chainLength / linkMeshes.Count;
 
             for (int i = 0; i < linkMeshes.Count; i++)
             {
-                // Determine positions on the chain length of the current link mesh
-                float leftLinkMeshPosition = linkMeshSeparation * i + chainSegmentLength;
+                if (linkMeshes[i] == null) { continue; }
+
+                // Cover the full handle-to-handle length. Skipping the first physics
+                // segment left a gap at the held grip that grew with chain length.
+                float leftLinkMeshPosition = linkMeshSeparation * i;
                 float rightLinkMeshPosition = leftLinkMeshPosition + linkMeshSeparation;
 
                 // Determine the chain links to calculate position from
                 int leftChainIndex = (int)Math.Floor(leftLinkMeshPosition / chainSegmentLength);
                 int rightChainIndex = (int)Math.Ceiling(rightLinkMeshPosition / chainSegmentLength);
+                leftChainIndex = Math.Max(0, Math.Min(leftChainIndex, chain.Count - 2));
+                rightChainIndex = Math.Max(1, Math.Min(rightChainIndex, chain.Count - 1));
                 float leftFractionalPosition = (leftLinkMeshPosition - (leftChainIndex * chainSegmentLength)) / chainSegmentLength;
                 float rightFractionalPosition = (rightLinkMeshPosition - ((rightChainIndex - 1) * chainSegmentLength)) / chainSegmentLength;
 
@@ -173,9 +187,10 @@ namespace AlternativePlay
                 Quaternion linkTwist = i % 2 != 0 ? Quaternion.Euler(90.0f, 0.0f, 0.0f) : Quaternion.identity;
 
                 // Final interpolation from the left and right points
+                Quaternion rotation = Quaternion.Lerp(leftQuaternion, rightQuaternion, 0.5f) * linkTwist;
+                rotation.Normalize();
                 linkMeshes[i].transform.position = ((rightPosition - leftPosition) / 2.0f) + leftPosition;
-                linkMeshes[i].transform.rotation = Quaternion.Lerp(leftQuaternion, rightQuaternion, 0.5f) * linkTwist;
-                linkMeshes[i].transform.rotation.Normalize();
+                linkMeshes[i].transform.rotation = rotation;
             }
         }
 
@@ -189,11 +204,8 @@ namespace AlternativePlay
             const float linkMeshLength = 0.1f;
 
             if (chainCount < 2) return new List<GameObject>(); // Create no links if there is less than 2 links
-            int chainSegments = chainCount - 1;
-            float shortChainLength = chainLength / chainSegments * (chainSegments - 1);  // Exclude the first segment from having links
 
-            // Calculate the number of links required with an overlap buffer
-            int count = (int)Math.Round((shortChainLength - linkMeshOverlap) / (linkMeshLength - linkMeshOverlap));
+            int count = Math.Max(0, (int)Math.Round((chainLength - linkMeshOverlap) / (linkMeshLength - linkMeshOverlap)));
 
             var result = new List<GameObject>();
             for (int i = 0; i < count; i++)
