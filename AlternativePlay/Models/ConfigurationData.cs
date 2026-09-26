@@ -108,6 +108,7 @@ namespace AlternativePlay.Models
         public bool NoSliders { get; set; }
         public bool NoArrows { get; set; }
         public bool TouchNotes { get; set; }
+        public bool TwinDarthMaul { get; set; }
 
         // Tracker Select Options
         public TrackerConfigData LeftTracker { get; set; } = new TrackerConfigData();

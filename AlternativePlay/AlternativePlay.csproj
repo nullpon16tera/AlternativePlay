@@ -175,6 +175,12 @@
     <Compile Include="ShowTrackersBehavior.cs" />
     <Compile Include="GameModifiersBehavior.cs" />
     <Compile Include="HarmonyPatches\DarthMaulHapticPatch.cs" />
+    <Compile Include="HarmonyPatches\TwinSaberHapticPatch.cs" />
+    <Compile Include="TwinSaber.cs" />
+    <Compile Include="TwinSaberManager.cs" />
+    <Compile Include="TwinSaberMarker.cs" />
+    <Compile Include="TwinCutContext.cs" />
+    <Compile Include="TwinNalulunaVisual.cs" />
     <Compile Include="HarmonyPatches\TouchNotesPatch.cs" />
     <Compile Include="InputManager.cs" />
     <Compile Include="AlternativePlay.cs" />

@@ -40,6 +40,17 @@ namespace AlternativePlay
                 return;
             }
 
+            // Twin Darth Maul adds a reverse blade behind each saber. Keep both
+            // sabers on their own controllers so the extras are not stacked onto
+            // a one-hand or two-hand staff.
+            if (this.configuration.Current.TwinDarthMaul)
+            {
+                this.Split = false;
+                this.temporaryOneFromTwo = false;
+                this.TransformForSplitDarthMaul();
+                return;
+            }
+
             if (this.Split)
             {
                 // Split: either trigger rejoins to the state that existed before Split.
