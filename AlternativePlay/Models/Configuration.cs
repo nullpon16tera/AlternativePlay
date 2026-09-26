@@ -204,6 +204,21 @@ namespace AlternativePlay.Models
                 playModeSettings.MoveNotesBack = clamped;
 
                 playModeSettings.PresetName = PlayModeSettings.NormalizePresetName(playModeSettings.PresetName);
+
+                // Migrate 2026-09-10 rebuild-era Flail visibility flags into dedicated fields.
+                if (playModeSettings.PlayMode == PlayMode.BeatFlail)
+                {
+                    if (!playModeSettings.ShowLeftFlailChain.HasValue)
+                    {
+                        playModeSettings.ShowLeftFlailChain = !playModeSettings.ReverseLeftSaber;
+                        playModeSettings.ReverseLeftSaber = false;
+                    }
+                    if (!playModeSettings.ShowRightFlailChain.HasValue)
+                    {
+                        playModeSettings.ShowRightFlailChain = !playModeSettings.ReverseRightSaber;
+                        playModeSettings.ReverseRightSaber = false;
+                    }
+                }
             }
         }
     }
