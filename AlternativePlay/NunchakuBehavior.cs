@@ -37,14 +37,16 @@ namespace AlternativePlay
         private List<GameObject> physicsChain;
         private List<GameObject> linkMeshes;
 
+        private bool dualAtStart;
         private Vector3 leftOriginalScale;
         private Vector3 rightOriginalScale;
         private bool capturedSaberScale;
 
         private void Start()
         {
-            // Do nothing if we aren't playing Nunchaku
-            if (this.configuration.Current.PlayMode != PlayMode.Nunchaku) { return; }
+            this.dualAtStart = this.configuration.Current.DualNunchaku;
+            // Do nothing if we aren't playing Nunchaku, or Dual Nunchaku owns the sabers.
+            if (this.dualAtStart || this.configuration.Current.PlayMode != PlayMode.Nunchaku) { return; }
 
             Utilities.CheckAndDisableForTrackerTransforms(this.configuration.Current.LeftTracker);
             Utilities.CheckAndDisableForTrackerTransforms(this.configuration.Current.RightTracker);
@@ -56,8 +58,8 @@ namespace AlternativePlay
 
         private void FixedUpdate()
         {
-            // Do nothing if we aren't playing Nunchaku
-            if (this.configuration.Current.PlayMode != PlayMode.Nunchaku) { return; }
+            // Do nothing if Dual Nunchaku owns the sabers, or we aren't playing Nunchaku
+            if (this.dualAtStart || this.configuration.Current.PlayMode != PlayMode.Nunchaku) { return; }
 
             // Apply gravity to the handles first
             float gravity = this.configuration.Current.Gravity * -9.81f;
@@ -109,8 +111,8 @@ namespace AlternativePlay
         }
         private void Update()
         {
-            // Do nothing if we aren't playing Nunchaku
-            if (this.configuration.Current.PlayMode != PlayMode.Nunchaku) { return; }
+            // Do nothing if Dual Nunchaku owns the sabers, or we aren't playing Nunchaku
+            if (this.dualAtStart || this.configuration.Current.PlayMode != PlayMode.Nunchaku) { return; }
 
             // Resolve Trigger button presses
             bool bothTriggerClicked = this.inputManager.GetBothTriggerClicked();

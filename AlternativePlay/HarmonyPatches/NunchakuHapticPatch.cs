@@ -15,7 +15,7 @@ namespace AlternativePlay.HarmonyPatches
 
         private static void Prefix(ref XRNode node)
         {
-            if (Configuration.Current.PlayMode != PlayMode.Nunchaku ||NunchakuBehavior == null || NunchakuBehavior.HeldState == NunchakuBehavior.Held.Both)
+            if (Configuration.Current.PlayMode != PlayMode.Nunchaku || Configuration.Current.DualNunchaku || NunchakuBehavior == null || NunchakuBehavior.HeldState == NunchakuBehavior.Held.Both)
             {
                 // Let the original function handle the haptic feedback
                 return;
