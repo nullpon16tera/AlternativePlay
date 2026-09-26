@@ -25,6 +25,7 @@ namespace AlternativePlay
         private readonly Transform modelAnchor;
         private readonly GameObject root;
         private readonly TwinNalulunaVisual customVisual;
+        private readonly TwinReeSaberVisual reeVisual;
         private bool sampled;
 
         public Saber Source { get; }
@@ -77,6 +78,7 @@ namespace AlternativePlay
                 this.root.SetActive(true);
                 SaberManager saberManager = container.TryResolve<SaberManager>();
                 this.customVisual = new TwinNalulunaVisual(this.Saber, saberManager, model.gameObject);
+                this.reeVisual = new TwinReeSaberVisual(this.Saber, saberManager, model.gameObject);
             }
             catch
             {
@@ -137,6 +139,7 @@ namespace AlternativePlay
         {
             this.SynchronizeTransform();
             this.customVisual.Synchronize();
+            this.reeVisual.Synchronize();
             this.Saber.ManualUpdate();
             if (!this.sampled)
             {
@@ -159,6 +162,7 @@ namespace AlternativePlay
         public void Dispose()
         {
             this.customVisual?.Dispose();
+            this.reeVisual?.Dispose();
             if (this.root != null)
             {
                 this.root.SetActive(false);
