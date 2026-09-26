@@ -12,17 +12,33 @@
 
     <!-- Main View -->
     <vertical pref-width="75" vertical-fit="PreferredSize">
+      <checkbox-setting text="Dual Nunchaku" value="DualNunchaku" bind-value="true" apply-on-change="true"
+                        hover-hint="One independent nunchaku per hand. Both use Chain Length and Reverse Nunchaku. Applies next song; disables score submission." />
+      <horizontal>
+        <horizontal pad-right="1">
+          <img preserve-aspect="true" pref-width="8" pref-height="8" source="~DualNunchakuOneColorLeftIcon" />
+        </horizontal>
+        <checkbox-setting text="Left One Color (Red)" value="DualNunchakuOneColorLeft" bind-value="true" apply-on-change="true"
+                          hover-hint="Dual only: both segments of the left nunchaku are red. Applies next song." />
+      </horizontal>
+      <horizontal>
+        <horizontal pad-right="1">
+          <img preserve-aspect="true" pref-width="8" pref-height="8" source="~DualNunchakuOneColorRightIcon" />
+        </horizontal>
+        <checkbox-setting text="Right One Color (Blue)" value="DualNunchakuOneColorRight" bind-value="true" apply-on-change="true"
+                          hover-hint="Dual only: both segments of the right nunchaku are blue. Applies next song." />
+      </horizontal>
       <horizontal>
         <horizontal pad-right="1">
           <img preserve-aspect="true" pref-width="8" pref-height="8" source="~ReverseNunchakuIcon" />
         </horizontal>
         <checkbox-setting text="Reverse Nunchaku" value="ReverseNunchaku" bind-value="true" apply-on-change='true'
-              hover-hint='Reverse the colors of the saber held on the left and right' />
+              hover-hint='Reverse saber colors. In Dual, swaps Held and Free colors on each hand without exchanging controllers.' />
       </horizontal>
       <increment-setting text="Chain Length" value="NunchakuLength" bind-value="true" apply-on-change='true' integer-only="true" min="10" max="100" increment="10"
 						 formatter="LengthFormatter" hover-hint="The distance between the handles" />
       <increment-setting text="Saber Length" value="NunchakuSaberLength" bind-value="true" apply-on-change='true' integer-only="true" min="20" max="200" increment="10"
-						 formatter="SaberLengthFormatter" hover-hint="Length of each nunchaku saber relative to the original. 100% is the original length." />
+						 formatter="SaberLengthFormatter" hover-hint="Length of each nunchaku saber relative to the original. 100% is the original length. Also applies to Dual Nunchaku." />
       <horizontal  pad-bottom="3">
         <slider-setting text="Gravity" value="Gravity" bind-value="true" apply-on-change='true' integer-only="false" min="0" max="5" increment="0.1"
 						get-event="RefreshGravity" hover-hint="Amount of G force applied to the nunchaku (multiple of -9.81 m/s^2)" />

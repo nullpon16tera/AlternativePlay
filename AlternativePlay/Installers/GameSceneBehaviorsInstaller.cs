@@ -38,6 +38,12 @@ namespace AlternativePlay.Installers
                 this.Container.Bind<TwinSaberManager>().FromInstance(twinSaberManager).AsSingle();
             }
 
+            if (configuration.Current.PlayMode == Models.PlayMode.Nunchaku && configuration.Current.DualNunchaku)
+            {
+                var dualNunchakuBehavior = this.Container.InstantiateComponentOnNewGameObject<DualNunchakuBehavior>();
+                this.Container.Bind<DualNunchakuBehavior>().FromInstance(dualNunchakuBehavior).AsSingle();
+            }
+
             // Manually Inject Harmony Patches
             NunchakuHapticPatch.NunchakuBehavior = nunchakuBehavior;
             DarthMaulHapticPatch.DarthMaulBehavior = darthMaulBehavior;

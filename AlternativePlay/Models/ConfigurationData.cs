@@ -81,6 +81,9 @@ namespace AlternativePlay.Models
         public bool ReverseSpearDirection { get; set; }
 
         // Nunchaku Options
+        public bool DualNunchaku { get; set; }
+        public bool DualNunchakuOneColorLeft { get; set; }
+        public bool DualNunchakuOneColorRight { get; set; }
         public bool ReverseNunchaku { get; set; }
         public int NunchakuLength { get; set; } = 50; // in centimetres
         public int NunchakuSaberLength { get; set; } = 100; // percent of original saber length

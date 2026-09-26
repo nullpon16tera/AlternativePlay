@@ -33,6 +33,45 @@ namespace AlternativePlay.UI
         [UIValue(nameof(NunchakuIcon))]
         public string NunchakuIcon => IconNames.Nunchaku;
 
+        [UIValue(nameof(DualNunchaku))]
+        private bool DualNunchaku
+        {
+            get => this.settings.DualNunchaku;
+            set
+            {
+                this.settings.DualNunchaku = value;
+                this.configuration.SaveConfiguration();
+            }
+        }
+
+        [UIValue(nameof(DualNunchakuOneColorLeftIcon))]
+        public string DualNunchakuOneColorLeftIcon => IconNames.LeftSaber;
+
+        [UIValue(nameof(DualNunchakuOneColorLeft))]
+        private bool DualNunchakuOneColorLeft
+        {
+            get => this.settings.DualNunchakuOneColorLeft;
+            set
+            {
+                this.settings.DualNunchakuOneColorLeft = value;
+                this.configuration.SaveConfiguration();
+            }
+        }
+
+        [UIValue(nameof(DualNunchakuOneColorRightIcon))]
+        public string DualNunchakuOneColorRightIcon => IconNames.RightSaber;
+
+        [UIValue(nameof(DualNunchakuOneColorRight))]
+        private bool DualNunchakuOneColorRight
+        {
+            get => this.settings.DualNunchakuOneColorRight;
+            set
+            {
+                this.settings.DualNunchakuOneColorRight = value;
+                this.configuration.SaveConfiguration();
+            }
+        }
+
         [UIValue(nameof(ReverseNunchakuIcon))]
         public string ReverseNunchakuIcon => IconNames.ReverseNunchaku;
 
@@ -102,6 +141,9 @@ namespace AlternativePlay.UI
 
         private void UpdateAllValues()
         {
+            this.NotifyPropertyChanged(nameof(this.DualNunchaku));
+            this.NotifyPropertyChanged(nameof(this.DualNunchakuOneColorLeft));
+            this.NotifyPropertyChanged(nameof(this.DualNunchakuOneColorRight));
             this.NotifyPropertyChanged(nameof(this.ReverseNunchaku));
             this.NotifyPropertyChanged(nameof(this.NunchakuLength));
             this.NotifyPropertyChanged(nameof(this.NunchakuSaberLength));

@@ -103,6 +103,9 @@ namespace AlternativePlay.UI
         {
             this.PlayModeIcons.Add(IconNames.Nunchaku);
 
+            if (settings.DualNunchaku) this.PlayModeIcons.Add(IconNames.Nunchaku);
+            if (settings.DualNunchaku && settings.DualNunchakuOneColorLeft) this.PlayModeIcons.Add(IconNames.LeftSaber);
+            if (settings.DualNunchaku && settings.DualNunchakuOneColorRight) this.PlayModeIcons.Add(IconNames.RightSaber);
             if (settings.ReverseNunchaku) this.PlayModeIcons.Add(IconNames.ReverseNunchaku);
         }
 

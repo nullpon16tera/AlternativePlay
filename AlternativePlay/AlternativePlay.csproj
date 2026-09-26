@@ -181,6 +181,15 @@
     <Compile Include="TwinSaberMarker.cs" />
     <Compile Include="TwinCutContext.cs" />
     <Compile Include="TwinNalulunaVisual.cs" />
+    <Compile Include="DualNunchakuBehavior.cs" />
+    <Compile Include="DualNunchakuAppearance.cs" />
+    <Compile Include="DualNunchakuPhysicalSaber.cs" />
+    <Compile Include="DualNunchakuCutContext.cs" />
+    <Compile Include="DualNunchakuCutDriver.cs" />
+    <Compile Include="DualNunchakuDiagnostics.cs" />
+    <Compile Include="NunchakuInstance.cs" />
+    <Compile Include="HarmonyPatches\DualNunchakuCutPatch.cs" />
+    <Compile Include="HarmonyPatches\DualNunchakuHapticPatch.cs" />
     <Compile Include="HarmonyPatches\TouchNotesPatch.cs" />
     <Compile Include="InputManager.cs" />
     <Compile Include="AlternativePlay.cs" />
