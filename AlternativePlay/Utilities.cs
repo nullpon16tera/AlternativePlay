@@ -216,5 +216,15 @@ namespace AlternativePlay
 
             return result;
         }
+
+        /// <summary>
+        /// Scales a saber along its local Z axis (blade direction) from the original local scale.
+        /// </summary>
+        public static void ApplySaberLength(Transform saber, Vector3 originalLocalScale, float lengthScale)
+        {
+            if (saber == null) return;
+            float scale = lengthScale < 0.01f ? 0.01f : lengthScale;
+            saber.localScale = new Vector3(originalLocalScale.x, originalLocalScale.y, originalLocalScale.z * scale);
+        }
     }
 }

@@ -21,6 +21,8 @@
       </horizontal>
       <increment-setting text="Chain Length" value="NunchakuLength" bind-value="true" apply-on-change='true' integer-only="true" min="10" max="100" increment="10"
 						 formatter="LengthFormatter" hover-hint="The distance between the handles" />
+      <increment-setting text="Saber Length" value="NunchakuSaberLength" bind-value="true" apply-on-change='true' integer-only="true" min="20" max="200" increment="10"
+						 formatter="SaberLengthFormatter" hover-hint="Length of each nunchaku saber relative to the original. 100% is the original length." />
       <horizontal  pad-bottom="3">
         <slider-setting text="Gravity" value="Gravity" bind-value="true" apply-on-change='true' integer-only="false" min="0" max="5" increment="0.1"
 						get-event="RefreshGravity" hover-hint="Amount of G force applied to the nunchaku (multiple of -9.81 m/s^2)" />
