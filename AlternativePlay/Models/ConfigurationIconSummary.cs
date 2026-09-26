@@ -119,6 +119,7 @@ namespace AlternativePlay.UI
             this.GameModifierIcons.Add(settings.NoSliders ? IconNames.NoSliders : IconNames.Empty);
             this.GameModifierIcons.Add(settings.NoArrowsRandom ? IconNames.NoArrowsRandom : IconNames.Empty);
             this.GameModifierIcons.Add(settings.TouchNotes ? IconNames.TouchNotes : IconNames.Empty);
+            if (settings.TwinDarthMaul) this.PlayModeIcons.Add(IconNames.DarthMaul);
         }
     }
 }

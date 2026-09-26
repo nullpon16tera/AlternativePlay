@@ -96,6 +96,20 @@ namespace AlternativePlay.UI
             }
         }
 
+        [UIValue(nameof(TwinDarthMaulIcon))]
+        public string TwinDarthMaulIcon => IconNames.DarthMaul;
+
+        [UIValue(nameof(TwinDarthMaul))]
+        private bool TwinDarthMaul
+        {
+            get => this.settings.TwinDarthMaul;
+            set
+            {
+                this.settings.TwinDarthMaul = value;
+                this.configuration.SaveConfiguration();
+            }
+        }
+
         private void UpdateAllValues()
         {
             this.NotifyPropertyChanged(nameof(this.NoArrowsRandom));
@@ -103,6 +117,7 @@ namespace AlternativePlay.UI
             this.NotifyPropertyChanged(nameof(this.NoSliders));
             this.NotifyPropertyChanged(nameof(this.NoArrows));
             this.NotifyPropertyChanged(nameof(this.TouchNotes));
+            this.NotifyPropertyChanged(nameof(this.TwinDarthMaul));
         }
     }
 }

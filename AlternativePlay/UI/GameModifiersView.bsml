@@ -31,6 +31,10 @@
         <img preserve-aspect="true" pref-width="12" preferred-height="5" source="~TouchNotesIcon" />
         <checkbox-setting text="Touch Notes" value="TouchNotes" bind-value="true" apply-on-change="true" hover-hint="All notes no longer require direction or speed to cut. You can touch, shoot or stab them." />
       </horizontal>
+      <horizontal pad-top="1">
+        <img preserve-aspect="true" pref-width="12" preferred-height="5" source="~TwinDarthMaulIcon" />
+        <checkbox-setting text="Twin Darth Maul" value="TwinDarthMaul" bind-value="true" apply-on-change="true" hover-hint="Add an opposite-color cutting blade behind each active saber. Follows all play styles. Disables score submission." />
+      </horizontal>
     </vertical>
 
     <!-- Spacing -->
