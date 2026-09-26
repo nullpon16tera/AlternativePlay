@@ -205,6 +205,27 @@ namespace AlternativePlay.Models
 
                 playModeSettings.PresetName = PlayModeSettings.NormalizePresetName(playModeSettings.PresetName);
 
+                if (playModeSettings.PlayMode == PlayMode.DarthMaul)
+                {
+                    // Compatibility cleanup for the 2026-09-10 rebuild, where
+                    // ReverseLeftSaber was temporarily used as a Darth Maul TWO→ONE runtime flag.
+                    if (playModeSettings.ReverseLeftSaber)
+                    {
+                        playModeSettings.ControllerCount = ControllerCountEnum.Two;
+                        playModeSettings.ReverseLeftSaber = false;
+                    }
+
+                    // ONE reverse defaults from the existing Reverse Maul Direction.
+                    if (!playModeSettings.ReverseMaulDirectionOneLeft.HasValue)
+                    {
+                        playModeSettings.ReverseMaulDirectionOneLeft = playModeSettings.ReverseMaulDirection;
+                    }
+                    if (!playModeSettings.ReverseMaulDirectionOneRight.HasValue)
+                    {
+                        playModeSettings.ReverseMaulDirectionOneRight = playModeSettings.ReverseMaulDirection;
+                    }
+                }
+
                 // Migrate 2026-09-10 rebuild-era Flail visibility flags into dedicated fields.
                 if (playModeSettings.PlayMode == PlayMode.BeatFlail)
                 {

@@ -46,6 +46,7 @@ namespace AlternativePlay.UI
                 this.settings.ControllerCount = (ControllerCountEnum)Enum.Parse(typeof(ControllerCountEnum), value);
                 this.configuration.SaveConfiguration();
                 this.NotifyPropertyChanged(nameof(this.ControllerChoiceIcon));
+                this.NotifyPropertyChanged(nameof(this.ReverseDarthMaul));
             }
         }
 
@@ -64,6 +65,7 @@ namespace AlternativePlay.UI
                 this.settings.UseLeft = value;
                 this.configuration.SaveConfiguration();
                 this.NotifyPropertyChanged(nameof(this.UseLeftControllerIcon));
+                this.NotifyPropertyChanged(nameof(this.ReverseDarthMaul));
             }
         }
 
@@ -73,10 +75,58 @@ namespace AlternativePlay.UI
         [UIValue(nameof(ReverseDarthMaul))]
         private bool ReverseDarthMaul
         {
-            get => this.settings.ReverseMaulDirection;
+            get
+            {
+                if (this.settings.ControllerCount == ControllerCountEnum.One)
+                {
+                    return this.settings.GetOneMaulReverse(this.settings.UseLeft);
+                }
+
+                return this.settings.ReverseMaulDirection;
+            }
             set
             {
-                this.settings.ReverseMaulDirection = value;
+                if (this.settings.ControllerCount == ControllerCountEnum.One)
+                {
+                    if (this.settings.UseLeft)
+                    {
+                        this.settings.ReverseMaulDirectionOneLeft = value;
+                    }
+                    else
+                    {
+                        this.settings.ReverseMaulDirectionOneRight = value;
+                    }
+                }
+                else
+                {
+                    this.settings.ReverseMaulDirection = value;
+                }
+
+                this.configuration.SaveConfiguration();
+            }
+        }
+
+        [UIValue(nameof(UseTriggerToSwitchHands))]
+        private bool UseTriggerToSwitchHands
+        {
+            get => this.settings.UseTriggerToSwitchHands;
+            set
+            {
+                this.settings.UseTriggerToSwitchHands = value;
+                this.configuration.SaveConfiguration();
+            }
+        }
+
+        /// <summary>
+        /// Reuses RemoveOtherSaber for Darth Maul TWO↔ONE switching during play.
+        /// </summary>
+        [UIValue(nameof(AllowTwoOneSwitch))]
+        private bool AllowTwoOneSwitch
+        {
+            get => this.settings.RemoveOtherSaber;
+            set
+            {
+                this.settings.RemoveOtherSaber = value;
                 this.configuration.SaveConfiguration();
             }
         }
@@ -108,6 +158,8 @@ namespace AlternativePlay.UI
             this.NotifyPropertyChanged(nameof(this.ControllerChoice));
             this.NotifyPropertyChanged(nameof(this.UseLeftController));
             this.NotifyPropertyChanged(nameof(this.ReverseDarthMaul));
+            this.NotifyPropertyChanged(nameof(this.UseTriggerToSwitchHands));
+            this.NotifyPropertyChanged(nameof(this.AllowTwoOneSwitch));
             this.NotifyPropertyChanged(nameof(this.UseTriggerToSeparate));
             this.NotifyPropertyChanged(nameof(this.SeparationAmount));
 

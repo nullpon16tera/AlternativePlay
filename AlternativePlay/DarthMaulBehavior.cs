@@ -17,10 +17,17 @@ namespace AlternativePlay
 
         public bool Split { get; private set; }
 
+        // TWO→ONE is a gameplay-only state. It must never be stored in Configuration.
+        internal bool temporaryOneFromTwo;
+        internal bool temporaryOneUseLeft;
+
         private void Start()
         {
             // Do nothing if we aren't playing Darth Maul
             if (this.configuration.Current.PlayMode != PlayMode.DarthMaul) { return; }
+
+            this.temporaryOneFromTwo = false;
+            this.temporaryOneUseLeft = this.configuration.Current.UseLeft;
 
             Utilities.CheckAndDisableForTrackerTransforms(this.configuration.Current.LeftTracker);
             Utilities.CheckAndDisableForTrackerTransforms(this.configuration.Current.RightTracker);
@@ -30,20 +37,109 @@ namespace AlternativePlay
         {
             if (this.configuration.Current.PlayMode != PlayMode.DarthMaul)
             {
-                // Do nothing if we aren't playing Darth Maul
                 return;
             }
 
-            if (this.configuration.Current.UseTriggerToSeparate)
+            if (this.Split)
             {
-                // Check to see if the trigger has been pressed
-                bool leftTriggerPressed = this.inputManager.GetLeftTriggerClicked();
-                bool rightTriggerPressed = this.inputManager.GetRightTriggerClicked();
-
-                if (leftTriggerPressed || rightTriggerPressed)
+                // Split: either trigger rejoins to the state that existed before Split.
+                if (this.inputManager.GetLeftTriggerClicked() || this.inputManager.GetRightTriggerClicked())
                 {
-                    this.Split = !this.Split;
+                    this.Split = false;
                 }
+            }
+            else if (this.temporaryOneFromTwo)
+            {
+                // Temporary ONE created from configured TWO. Both triggers return to TWO.
+                if (this.inputManager.GetBothTriggerClicked())
+                {
+                    this.inputManager.GetLeftTriggerClicked();
+                    this.inputManager.GetRightTriggerClicked();
+                    this.temporaryOneFromTwo = false;
+                }
+                else if (this.temporaryOneUseLeft)
+                {
+                    if (this.inputManager.GetLeftTriggerClicked())
+                    {
+                        if (this.configuration.Current.UseTriggerToSeparate)
+                        {
+                            this.Split = true;
+                        }
+                    }
+                    else if (this.inputManager.GetRightTriggerClicked() && this.configuration.Current.UseTriggerToSwitchHands)
+                    {
+                        this.temporaryOneUseLeft = false;
+                    }
+                }
+                else if (this.inputManager.GetRightTriggerClicked())
+                {
+                    if (this.configuration.Current.UseTriggerToSeparate)
+                    {
+                        this.Split = true;
+                    }
+                }
+                else if (this.inputManager.GetLeftTriggerClicked() && this.configuration.Current.UseTriggerToSwitchHands)
+                {
+                    this.temporaryOneUseLeft = true;
+                }
+            }
+            else if (this.configuration.Current.ControllerCount == ControllerCountEnum.Two)
+            {
+                // RemoveOtherSaber is kept as the persisted UI option for TWO / ONE Switch
+                // for compatibility with existing Pre-Twin configurations.
+                if (this.configuration.Current.RemoveOtherSaber)
+                {
+                    if (this.inputManager.GetBothTriggerClicked())
+                    {
+                        this.inputManager.GetLeftTriggerClicked();
+                        this.inputManager.GetRightTriggerClicked();
+                        if (this.configuration.Current.UseTriggerToSeparate)
+                        {
+                            this.Split = true;
+                        }
+                    }
+                    else if (this.inputManager.GetLeftTriggerClicked())
+                    {
+                        this.temporaryOneFromTwo = true;
+                        this.temporaryOneUseLeft = true;
+                    }
+                    else if (this.inputManager.GetRightTriggerClicked())
+                    {
+                        this.temporaryOneFromTwo = true;
+                        this.temporaryOneUseLeft = false;
+                    }
+                }
+                else if (this.configuration.Current.UseTriggerToSeparate &&
+                    (this.inputManager.GetLeftTriggerClicked() || this.inputManager.GetRightTriggerClicked()))
+                {
+                    this.Split = true;
+                }
+            }
+            else if (this.configuration.Current.UseLeft)
+            {
+                // Formal configured ONE mode.
+                if (this.inputManager.GetLeftTriggerClicked())
+                {
+                    if (this.configuration.Current.UseTriggerToSeparate)
+                    {
+                        this.Split = true;
+                    }
+                }
+                else if (this.inputManager.GetRightTriggerClicked() && this.configuration.Current.UseTriggerToSwitchHands)
+                {
+                    this.configuration.Current.UseLeft = false;
+                }
+            }
+            else if (this.inputManager.GetRightTriggerClicked())
+            {
+                if (this.configuration.Current.UseTriggerToSeparate)
+                {
+                    this.Split = true;
+                }
+            }
+            else if (this.inputManager.GetLeftTriggerClicked() && this.configuration.Current.UseTriggerToSwitchHands)
+            {
+                this.configuration.Current.UseLeft = true;
             }
 
             this.TransformSabers();
@@ -60,10 +156,16 @@ namespace AlternativePlay
                 return;
             }
 
+            if (this.temporaryOneFromTwo)
+            {
+                this.TransformOneControllerMaul(this.temporaryOneUseLeft, true);
+                return;
+            }
+
             switch (this.configuration.Current.ControllerCount)
             {
                 case ControllerCountEnum.One:
-                    this.TransformOneControllerMaul();
+                    this.TransformOneControllerMaul(this.configuration.Current.UseLeft, false);
                     break;
 
                 case ControllerCountEnum.Two:
@@ -71,7 +173,6 @@ namespace AlternativePlay
                     break;
 
                 default:
-                    // Do nothing
                     break;
             }
         }
@@ -88,12 +189,12 @@ namespace AlternativePlay
         /// <summary>
         /// Moves the maul sabers based on a one controller scheme
         /// </summary>
-        private void TransformOneControllerMaul()
+        private void TransformOneControllerMaul(bool useLeft, bool temporaryFromTwo)
         {
             float sep = 1.0f * this.configuration.Current.MaulDistance / 100.0f;
 
             // Get the Pose of the base saber and calculate the rotated pose from it
-            Pose basePose = this.configuration.Current.UseLeft
+            Pose basePose = useLeft
                 ? this.saberDeviceManager.GetLeftSaberPose(this.configuration.Current.LeftTracker)
                 : this.saberDeviceManager.GetRightSaberPose(this.configuration.Current.RightTracker);
 
@@ -101,14 +202,27 @@ namespace AlternativePlay
             Vector3 separation = new Vector3(0.0f, 0.0f, sep * 2.0f);
             rotatedPose.position += (rotatedPose.rotation * separation);
 
-            // Determine which pose belongs to which saber and set them
-            Pose leftSaberPose = this.configuration.Current.ReverseMaulDirection ? basePose : rotatedPose;
-            Pose rightSaberPose = this.configuration.Current.ReverseMaulDirection ? rotatedPose : basePose;
-            if (this.configuration.Current.UseLeft)
+            // TWO-derived ONE uses a fixed hand-based color mapping:
+            // Right hand = front RED / rear BLUE; Left hand = front BLUE / rear RED.
+            // Formal ONE uses a Reverse setting stored per holding hand.
+            Pose leftSaberPose;
+            Pose rightSaberPose;
+            bool reverseForHand = this.configuration.Current.GetOneMaulReverse(useLeft);
+            bool useRotatedAsLeft = temporaryFromTwo
+                ? useLeft
+                : (useLeft == reverseForHand);
+
+            if (useRotatedAsLeft)
             {
-                leftSaberPose = this.configuration.Current.ReverseMaulDirection ? rotatedPose : basePose;
-                rightSaberPose = this.configuration.Current.ReverseMaulDirection ? basePose : rotatedPose;
+                leftSaberPose = rotatedPose;
+                rightSaberPose = basePose;
             }
+            else
+            {
+                leftSaberPose = basePose;
+                rightSaberPose = rotatedPose;
+            }
+
             this.saberDeviceManager.SetLeftSaberPose(leftSaberPose);
             this.saberDeviceManager.SetRightSaberPose(rightSaberPose);
         }
