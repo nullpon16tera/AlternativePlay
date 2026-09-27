@@ -34,8 +34,7 @@ namespace AlternativePlay
             try
             {
                 this.chain.Add(Utilities.CreateLink(hand + " Root", 3f, 1.0f, true));
-                int linkCount = Utilities.IntermediateLinkCount(length);
-                for (int i = 0; i < linkCount; i++)
+                for (int i = 0; i < 3; i++)
                 {
                     this.chain.Add(Utilities.CreateLink(hand + " Link " + i, 1f, 1.0f));
                 }
@@ -86,7 +85,7 @@ namespace AlternativePlay
 
         internal void UpdatePhysicsVisuals()
         {
-            Utilities.MoveLinkMeshes(this.meshes, this.chain, this.length);
+            Utilities.MoveLinkMeshes(this.meshes, this.chain, this.length, true, true);
             Transform transform = this.chain[this.chain.Count - 1].transform;
             this.free.SetPhysicsPose(new Pose(transform.position / 10f, transform.rotation * Quaternion.Euler(0f, -90f, 0f)));
         }

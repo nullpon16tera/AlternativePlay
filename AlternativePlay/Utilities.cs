@@ -139,35 +139,38 @@ namespace AlternativePlay
         }
 
         /// <summary>
-        /// Keep physics segments near one visual link long, so lengthening the chain
-        /// adds links instead of stretching the first segment away from the handle.
+        /// Move the link meshes to the same positions of the chain.
+        /// pinStartToRoot visually slides the chain axis onto the handle without
+        /// changing physics. Extra visual links cannot do this, because the first
+        /// bend still lives on the first physics joint.
         /// </summary>
-        public static int IntermediateLinkCount(float lengthMeters)
-        {
-            const float segmentLength = 0.10f;
-            int segments = Mathf.Max(2, Mathf.RoundToInt(lengthMeters / segmentLength));
-            return Mathf.Clamp(segments - 1, 1, 12);
-        }
-
-        /// <summary>
-        /// Move the link meshes to the same positions of the chain
-        /// </summary>
-        public static void MoveLinkMeshes(List<GameObject> linkMeshes, List<GameObject> chain, float chainLength)
+        public static void MoveLinkMeshes(List<GameObject> linkMeshes, List<GameObject> chain, float chainLength, bool skipFirstSegment = true, bool pinStartToRoot = false)
         {
             if (chain == null || linkMeshes == null || chain.Count < 2 || linkMeshes.Count == 0) { return; }
 
+            // Calculate required numbers first
             int chainSegments = chain.Count - 1;
             float chainSegmentLength = chainLength / chainSegments;
             if (chainSegmentLength <= 0.0f) { return; }
-            float linkMeshSeparation = chainLength / linkMeshes.Count;
+
+            // Original nunchaku/flail visuals skip the first physics segment. That
+            // gap is length/segmentCount, so it grows as the chain gets longer.
+            float visualLength = skipFirstSegment
+                ? chainLength / chainSegments * (chainSegments - 1)
+                : chainLength;
+            float startOffset = skipFirstSegment ? chainSegmentLength : 0.0f;
+            float linkMeshSeparation = visualLength / linkMeshes.Count;
+
+            Vector3 root = chain[0].transform.position / 10.0f;
+            Vector3 firstJoint = chain[1].transform.position / 10.0f;
+            Vector3 pinOffset = pinStartToRoot ? root - firstJoint : Vector3.zero;
 
             for (int i = 0; i < linkMeshes.Count; i++)
             {
                 if (linkMeshes[i] == null) { continue; }
 
-                // Cover the full handle-to-handle length. Skipping the first physics
-                // segment left a gap at the held grip that grew with chain length.
-                float leftLinkMeshPosition = linkMeshSeparation * i;
+                // Determine positions on the chain length of the current link mesh
+                float leftLinkMeshPosition = linkMeshSeparation * i + startOffset;
                 float rightLinkMeshPosition = leftLinkMeshPosition + linkMeshSeparation;
 
                 // Determine the chain links to calculate position from
@@ -182,12 +185,42 @@ namespace AlternativePlay
                 Vector3 leftPosition = ((chain[leftChainIndex + 1].transform.position - chain[leftChainIndex].transform.position) / 10.0f * leftFractionalPosition) + (chain[leftChainIndex].transform.position / 10.0f);
                 Vector3 rightPosition = ((chain[rightChainIndex].transform.position - chain[rightChainIndex - 1].transform.position) / 10.0f * rightFractionalPosition) + (chain[rightChainIndex - 1].transform.position / 10.0f);
 
+                if (pinStartToRoot && visualLength > 1E-08f)
+                {
+                    float tLeft = Mathf.Clamp01((leftLinkMeshPosition - startOffset) / visualLength);
+                    float tRight = Mathf.Clamp01((rightLinkMeshPosition - startOffset) / visualLength);
+                    leftPosition += pinOffset * (1.0f - tLeft);
+                    rightPosition += pinOffset * (1.0f - tRight);
+                }
+
                 Quaternion leftQuaternion = Quaternion.Lerp(chain[leftChainIndex].transform.rotation, chain[leftChainIndex + 1].transform.rotation, leftFractionalPosition);
                 Quaternion rightQuaternion = Quaternion.Lerp(chain[rightChainIndex - 1].transform.rotation, chain[rightChainIndex].transform.rotation, rightFractionalPosition);
                 Quaternion linkTwist = i % 2 != 0 ? Quaternion.Euler(90.0f, 0.0f, 0.0f) : Quaternion.identity;
 
-                // Final interpolation from the left and right points
-                Quaternion rotation = Quaternion.Lerp(leftQuaternion, rightQuaternion, 0.5f) * linkTwist;
+                Vector3 dir = rightPosition - leftPosition;
+                Quaternion rotation;
+                if (pinStartToRoot && dir.sqrMagnitude > 1E-08f)
+                {
+                    Vector3 up = chain[0].transform.up;
+                    if (up.sqrMagnitude < 1E-08f)
+                    {
+                        up = Vector3.up;
+                    }
+
+                    up.Normalize();
+                    dir.Normalize();
+                    if (Mathf.Abs(Vector3.Dot(dir, up)) > 0.95f)
+                    {
+                        up = Mathf.Abs(dir.y) < 0.95f ? Vector3.up : Vector3.right;
+                    }
+
+                    rotation = Quaternion.LookRotation(dir, up) * Quaternion.Euler(0.0f, -90.0f, 0.0f) * linkTwist;
+                }
+                else
+                {
+                    rotation = Quaternion.Lerp(leftQuaternion, rightQuaternion, 0.5f) * linkTwist;
+                }
+
                 rotation.Normalize();
                 linkMeshes[i].transform.position = ((rightPosition - leftPosition) / 2.0f) + leftPosition;
                 linkMeshes[i].transform.rotation = rotation;
@@ -198,14 +231,19 @@ namespace AlternativePlay
         /// Creates the same number of link mesh instances as the number of links
         /// in the chain
         /// </summary>
-        public static List<GameObject> CreateLinkMeshes(AssetLoaderBehavior assetLoader, int chainCount, float chainLength)
+        public static List<GameObject> CreateLinkMeshes(AssetLoaderBehavior assetLoader, int chainCount, float chainLength, bool skipFirstSegment = true)
         {
             const float linkMeshOverlap = 0.03f;
             const float linkMeshLength = 0.1f;
 
             if (chainCount < 2) return new List<GameObject>(); // Create no links if there is less than 2 links
+            int chainSegments = chainCount - 1;
+            float visualLength = skipFirstSegment
+                ? chainLength / chainSegments * (chainSegments - 1)
+                : chainLength;
 
-            int count = Math.Max(0, (int)Math.Round((chainLength - linkMeshOverlap) / (linkMeshLength - linkMeshOverlap)));
+            // Calculate the number of links required with an overlap buffer
+            int count = Math.Max(0, (int)Math.Round((visualLength - linkMeshOverlap) / (linkMeshLength - linkMeshOverlap)));
 
             var result = new List<GameObject>();
             for (int i = 0; i < count; i++)

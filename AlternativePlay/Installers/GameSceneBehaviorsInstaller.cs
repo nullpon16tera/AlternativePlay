@@ -1,4 +1,4 @@
-﻿using AlternativePlay.HarmonyPatches;
+using AlternativePlay.HarmonyPatches;
 using Zenject;
 
 namespace AlternativePlay.Installers

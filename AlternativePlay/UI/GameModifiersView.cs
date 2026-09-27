@@ -1,4 +1,4 @@
-﻿using AlternativePlay.Models;
+using AlternativePlay.Models;
 using BeatSaberMarkupLanguage.Attributes;
 using BeatSaberMarkupLanguage.ViewControllers;
 using Zenject;

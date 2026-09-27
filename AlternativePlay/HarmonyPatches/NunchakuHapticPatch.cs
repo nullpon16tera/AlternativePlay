@@ -1,4 +1,4 @@
-﻿using AlternativePlay.Models;
+using AlternativePlay.Models;
 using HarmonyLib;
 using UnityEngine.XR;
 
